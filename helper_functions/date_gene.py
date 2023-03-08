@@ -15,9 +15,9 @@ from streamlit_tags import st_tags, st_tags_sidebar
 
 def qc_df(df_dict):
     ########################################### HGNC Reference Table ####################################################
-    @st.cache
+    @st.cache_data()
     def clean_ref():
-        for_ref = pd.read_csv("hgnc-symbol-check2.csv") # github
+        for_ref = pd.read_csv("accessory_files/hgnc-symbol-check2.csv") # github
         for_ref.reset_index(drop=True,inplace=True)
         for_ref.columns = for_ref.iloc[0,:]
         for_ref.drop(index=0, inplace=True)
