@@ -6,6 +6,8 @@ class States():
         for k,v in state_dict.items():
             if k not in st.session_state:
                 st.session_state[k] = v
+            else:
+                pass
 
     def save_state(self, state_dict):
         for k,v in state_dict.items():

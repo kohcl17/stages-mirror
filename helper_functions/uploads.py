@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from helper_functions.date_gene import qc_df
 
+
 class FileUploads():
     def read_xfile(self, df_query):
         '''
@@ -27,8 +28,8 @@ class FileUploads():
                 df_dict[head] = data
 
             elif tail == 'xlsx':
-                x = st.cache_data(pd.read_excel)(d, index_col=0, sheet_name=None, engine='openpyxl')
-                selected_sheet = file_opts.multiselect(label="* Select which sheet to read in", options=x.keys())
+                x = pd.read_excel(d, index_col=0, sheet_name=None, engine='openpyxl')
+                selected_sheet = st.multiselect(label="Select which sheet to read in", options=list(x.keys()))
                 if len(selected_sheet) != 0:
                     for i in selected_sheet:
                         df_dict[f"{head}_{i}"] = x[i]
