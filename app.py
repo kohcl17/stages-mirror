@@ -48,3 +48,7 @@ if file_type != "Fold-Changes and P-values":
     metadata = file_opts.file_uploader(label="Upload gene expression's metadata here", type = ['csv', 'txt', 'xlsx'], accept_multiple_files=False)
     meta_dict = fileuploads.read_xfile(metadata)
     ss.save_state({'meta_dict':meta_dict})
+
+prep = st.sidebar.expander("some other expander")
+with prep:
+    st.write("Hello")
