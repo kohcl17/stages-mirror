@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
 from helper_functions.date_gene import qc_df
+from helper_functions.session_state import ss
 
 
+ss.initialise_state(dict(excel_sheet_used = None))
 class FileUploads():
     def read_xfile(self, df_query):
         '''
@@ -29,7 +31,8 @@ class FileUploads():
 
             elif tail == 'xlsx':
                 x = pd.read_excel(d, index_col=0, sheet_name=None, engine='openpyxl')
-                selected_sheet = st.multiselect(label="Select which sheet to read in", options=list(x.keys()))
+                selected_sheet = st.multiselect(label="Select which sheet to read in", options=list(x.keys()), default = st.session_state['excel_sheet_used'])
+                ss.save_state(dict(excel_sheet_used = selected_sheet))
                 if len(selected_sheet) != 0:
                     for i in selected_sheet:
                         df_dict[f"{head}_{i}"] = x[i]

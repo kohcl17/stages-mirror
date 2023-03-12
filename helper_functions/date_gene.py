@@ -13,7 +13,14 @@ from datetime import datetime
 import streamlit as st
 from streamlit_tags import st_tags, st_tags_sidebar
 
+from helper_functions.session_state import ss
+
 def qc_df(df_dict):
+    ss.initialise_state({'date_fmt': 'yyyy-dd-mm',
+                         'info_stored': 'month-day',
+                         'first_mar01_fx': "MTARC1: mitochondrial amidoxime reducing component 1",
+                         'first_mar02_fx': "MTARC2: mitochondrial amidoxime reducing component 2"
+                         })
     ########################################### HGNC Reference Table ####################################################
     @st.cache_data()
     def clean_ref():
@@ -98,9 +105,11 @@ def qc_df(df_dict):
                                 " Check HGNC symbol reference in the sidebar for reference. 👈")
                 st.dataframe(mar1_df.astype(str))
 
+                first_mar01_fx_opts = ["MTARC1: mitochondrial amidoxime reducing component 1", "MARCHF1: membrane associated ring-CH-type finger 1"]
                 first_mar01_fx = st.selectbox(f"Select the name and function that {mar1[0]} corresponds to for {k} dataframe",
-                                            options=["MTARC1: mitochondrial amidoxime reducing component 1",
-                                                    "MARCHF1: membrane associated ring-CH-type finger 1"])
+                                            options=first_mar01_fx_opts,
+                                            index = first_mar01_fx_opts.index(st.session_state['first_mar01_fx']))
+
             # function below can still apply to genes with only 1 MAR-01 gene because the dictionary will only match those found in the data
             if first_mar01_fx == "MTARC1: mitochondrial amidoxime reducing component 1":
                 first_mar01 = "MTARC1"
@@ -122,10 +131,10 @@ def qc_df(df_dict):
                 " Check old and new HGNC symbols in the sidebar for reference. 👈")
             each_df_exp.dataframe(mar2_df.astype(str))
 
+            first_mar02_fx_opts = ["MTARC2: mitochondrial amidoxime reducing component 2", "MARCHF2: membrane associated ring-CH-type finger 2"]
             first_mar02_fx = each_df_exp.selectbox(f"Select the name and function that {mar2[0]} corresponds to for {k} dataframe",
-                                        options=[
-                                            "MTARC2: mitochondrial amidoxime reducing component 2",
-                                            "MARCHF2: membrane associated ring-CH-type finger 2"])
+                                        options=first_mar02_fx_opts,
+                                        index=first_mar02_fx_opts.index(st.session_state['first_mar02_fx']))
 
             if first_mar02_fx == "MTARC2: mitochondrial amidoxime reducing component 2":
                 first_mar02 = "MTARC2"
@@ -190,12 +199,20 @@ def qc_df(df_dict):
     ############################## Dates are only numbers ##########################################
     def numeric_date(k,df,numdate):
         num_exp = st.expander(f"Expand if {k}'s date format is numerical (eg. yyyy/mm/dd)")
+
+        date_fmt_opts = ["yyyy-dd-mm", "yyyy-mm-dd", "dd-mm-yyyy", "mm-dd-yyyy"]
+        info_stored_opts = ['month-year', 'month-day']
+
         date_fmt = num_exp.radio(f"Select the format that {k} dataframe is in",
-                    options=["yyyy-dd-mm", "yyyy-mm-dd", "dd-mm-yyyy", "mm-dd-yyyy"])
+                    options=date_fmt_opts, index = date_fmt_opts.index(st.session_state['date_fmt']))
+        ss.save_state({'date_fmt':date_fmt})
+
         info_stored = num_exp.radio(f"Select how {k}'s dates should be read to derive gene names (Hover '?' for help)",
-                                    options=['month-year', 'month-day'],
+                                    options= info_stored_opts,
                                     help='For example, 2001-03-09 (yyyy-mm-dd) may either be Mar-01 (MARCHF1) or Mar-09 (MARCHF9).',
-                                    index=1)
+                                    index=info_stored_opts.index(st.session_state['info_stored']))
+        ss.save_state({'info_stored':info_stored})
+
         num_exp.info("If you're unsure about the above option, check the converted dataframe and select 'month-year.' "
                     "We recommend you to check the converted dataframe to ensure that the dates are converted correctly. If unsuccessful, <NA> symbols will populate at the bottom of the converted dataframe.")
         if info_stored == 'month-year':
