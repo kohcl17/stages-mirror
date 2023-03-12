@@ -41,7 +41,8 @@ else:
 # Complicated conditions
 ## 1. have files uploaded and not using demo
 ## 2. no files uploaded and using demo
-## 3. no files uploaded and no demo
+## 3. have files uploaded and using demo
+## 4. no files uploaded and no demo
 if st.session_state['df_in'] is not None and st.session_state['demo'] is False:
     with file_opts:
         cleandict = st.cache_data(experimental_allow_widgets = True)(fileuploads.read_xfile)(st.session_state['df_in'])
