@@ -7,7 +7,7 @@ scipy
 numpy
 pandas
 scikit_learn
-openpyxl
+openpyxl==3.1.0
 xlrd
 gseapy
 XlsxWriter

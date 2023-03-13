@@ -1,18 +1,29 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 from helper_functions.downloads import file_downloads
 from helper_functions.preprocessing import tested
 from helper_functions.session_state import ss
 from helper_functions.uploads import fileuploads
 
-###################################################### SESSION STATES ##################################################
+# ###################################################### SESSION STATES ##################################################
 st.session_state.update(st.session_state)
-ss.initialise_state(state_dict = {'file_type':'Fold-Changes and P-values', 'df_in':None, 'demo':False, 'view_df':False, 'anova_dict':None, 'expr_dict':None, 'meta_dict':None})
-########################################################################################################################
+ss.initialise_state(state_dict = {'file_type':'Fold-Changes and P-values',
+                                  'df_in':None,
+                                  'demo':False,
+                                  'view_df':False,
+                                  'anova_dict':None,
+                                  'expr_dict':None,
+                                  'meta_dict':None,
+                                  'meta_in':None,
+                                  'meta_excel':None,
+                                  'df_excel':None
+                                  })
+# ########################################################################################################################
 
 
-################################################# File Uploader ########################################################
+# ################################################# File Uploader ########################################################
 file_opts = st.sidebar.expander("File Upload Options", expanded = True)
 use_demo = file_opts.checkbox("Use demo dataset", value=st.session_state['demo'], on_change=ss.binaryswitch, args = ('demo',))
 
@@ -24,9 +35,9 @@ ss.save_state(dict(file_type = file_type))
 df_query = file_opts.file_uploader('Upload your file', type = ['csv', 'txt', 'xlsx'], accept_multiple_files=True, help='Note that excel files take longer to upload')
 
 clear = file_opts.button("Clear all uploaded files", on_click=ss.clear_output)
-# Save the df_query so that the data remains stored as the conditions will be met via proxy (df_in session state)
-## Note that the df_in is not actually able to be read in as data directly, but rather is just a number for my conditions to be met
-## In this case, st.cache_data around the read_xfile method is still required
+# # Save the df_query so that the data remains stored as the conditions will be met via proxy (df_in session state)
+# ## Note that the df_in is not actually able to be read in as data directly, but rather is just a number for my conditions to be met
+# ## In this case, st.cache_data around the read_xfile method is still required
 if len(df_query) != 0:
     if clear:
         ss.save_state(dict(df_in = None))
@@ -38,14 +49,14 @@ else:
     st.session_state['df_in'] = st.session_state['df_in']
 
 
-# Complicated conditions
-## 1. have files uploaded and not using demo
-## 2. no files uploaded and using demo
-## 3. have files uploaded and using demo
-## 4. no files uploaded and no demo
+# # Complicated conditions
+# ## 1. have files uploaded and not using demo
+# ## 2. no files uploaded and using demo
+# ## 3. have files uploaded and using demo
+# ## 4. no files uploaded and no demo
 if st.session_state['df_in'] is not None and st.session_state['demo'] is False:
     with file_opts:
-        cleandict = st.cache_data(experimental_allow_widgets = True)(fileuploads.read_xfile)(st.session_state['df_in'])
+        cleandict = fileuploads.read_xfile(st.session_state['df_in'], ss_excel = 'df_excel')
     cleandict = fileuploads.capslock_genes(cleandict)
 
     if file_type == "Fold-Changes and P-values":
@@ -55,10 +66,14 @@ if st.session_state['df_in'] is not None and st.session_state['demo'] is False:
         with file_opts:
             metadata = st.file_uploader(label="Upload gene expression's metadata here", type = ['csv', 'txt', 'xlsx'], accept_multiple_files=True)
             if len(metadata) != 0:
-                meta_dict = fileuploads.read_xfile(metadata)
-                ss.save_state({'expr_dict':cleandict,'meta_dict':meta_dict, 'anova_dict':None})
+                if clear:
+                    ss.save_state({'meta_in':None})
+                else:
+                    ss.save_state({'meta_in':metadata})
+                    meta_dict = fileuploads.read_xfile(st.session_state['meta_in'], ss_excel = 'meta_excel')
+                    ss.save_state({'expr_dict':cleandict,'meta_dict':meta_dict})
             else:
-                ss.save_state({'expr_dict':cleandict, 'meta_dict':None, 'anova_dict':None})
+                ss.save_state({'expr_dict':cleandict, 'meta_dict':st.session_state['meta_dict'], 'meta_in':st.session_state['meta_in']})
 
 elif st.session_state['df_in'] is None and st.session_state['demo'] is True:
     testdata = pd.read_csv("accessory_files/demo_dataframe_corrected.csv", index_col=0)
@@ -80,7 +95,6 @@ if view_df is True:
     _ = {main_expr.subheader(k):main_expr.dataframe(v) for k,v in exprdict.items()} if exprdict is not None else main_expr.info("No gene expression counts uploaded")
     _ = {meta_expr.subheader(k):meta_expr.dataframe(v) for k,v in metadatadict.items()} if metadatadict is not None else meta_expr.info("No metadata uploaded")
     _ = {anova_expr.subheader(k):anova_expr.dataframe(v) for k,v in anovadict.items()} if anovadict is not None else anova_expr.info("No fold-changes and p-values uploaded")
-
 
 ################################### DEBUGGING STAGE #############################################
 # ss.initialise_state(dict(viewdf = False, use_demo = False, cleandict = None))
