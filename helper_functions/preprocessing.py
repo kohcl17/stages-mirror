@@ -8,6 +8,8 @@ import streamlit as st
 from streamlit_tags import st_tags, st_tags_sidebar
 
 import plotly.colors as pc
+import matplotlib.pyplot as plt
+import decoupler as dc
 
 
 class FC_class():
@@ -45,8 +47,35 @@ class FC_class():
         return log_dict
 
 
-# class RNAseq():
-#     def get_ttest_stats(self, cleandict):
+class RNAseq():
+    def chunks(self, list_a, chunk_size):
+        return [list_a[i:i + chunk_size] for i in range(0, len(list_a), chunk_size)]
+    
+    def violin_maxy(self, adata):
+        log10_adata = np.log1p(adata.to_df())
+        maxy = math.ceil(max(log10_adata.max(axis=0)))
+        return maxy
+    
+    def multiviolin(self, adata, split_long_violins):
+        '''
+        Parameters
+        ----------
+        adata: AnnData object containing counts and metadata
+        split_long_violins: list | chunked list
+        vthresh: int | threshold to draw the line and filter genes that are above this value
+        '''
+        unit_height = 20/7
+        violin1, axes = plt.subplots(figsize = (10, len(split_long_violins) * unit_height), nrows=len(split_long_violins), ncols=1, sharey = True, constrained_layout=True)
+        for a, ax in zip(split_long_violins, axes):
+            dc.plot_violins(adata[a,:],
+                            log = True,
+                            ax = ax,
+                            color = "#00ABFD")
+        violin1.suptitle("Log1p counts per sample")
+        return violin1, axes
+
+    # def get_ttest_stats(self, cleandict):
         
 
 tested = FC_class()
+counts_pp = RNAseq()

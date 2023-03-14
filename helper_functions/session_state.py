@@ -19,7 +19,6 @@ class States():
             st.session_state[key] = True
 
     def clear_output(self):
-        for key in ['df_in', 'anova_dict', 'meta_dict', 'expr_dict', 'meta_in']:
-            st.session_state[key] = None
-
+        for k in st.session_state:
+            del st.session_state[k]
 ss = States()
