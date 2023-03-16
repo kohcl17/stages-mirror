@@ -26,14 +26,17 @@ ss.initialise_state({'test_fdr':'None',
                      'adata':None,
                      'violin1':None,
                      'violin2':None,
+                     'comparisons':None,
                      'comp_var': 0,
                      'comparison_options': [],
                      'baseline': None,
                      'comparisonopts_nobaseline':[],
                      'against_baseline':None,
                      'equalvar':False,
+                     'use_corrected_pval':False,
                      'submit_comparison':False,
-                     'ready':None})
+                     'ready':None,
+                     'log_dict_ready':None})
 exprdict, metadatadict, anovadict = st.session_state['expr_dict'], st.session_state['meta_dict'], st.session_state['anova_dict']
 
 adjusted_dfs = {}
@@ -73,17 +76,19 @@ if anovadict is not None:
     
     else:
         adjusted_dfs = anovadict
-        ss.save_state({'ready': adjusted_dfs, 'test_fdr':"None"})
+        ss.save_state({'test_fdr':"None", 'comparisons':comps, 'ready': adjusted_dfs})
 
 elif exprdict is not None and metadatadict is not None: # RNAseq or microarray data
     exprdict = {k:v.groupby(v.index).mean() for k,v in exprdict.items()}
     expr_obj = exprdict[list(exprdict.keys())[0]].T.sort_index(axis=0, ascending=True)
+    expr_key = list(exprdict.keys())[0]
     meta_obj = metadatadict[list(metadatadict.keys())[0]].sort_index(axis=0, ascending=True)
 
     adata = AnnData(expr_obj, obs = meta_obj, dtype='float32') # expr data should be genes in cols, subjects in rows, obs should be the same
     ss.save_state({"adata":adata})
 
     if st.session_state['file_type'] == "RNAseq Counts": # specifically RNAseq data
+        st.header("Count Normalisation")
         split_long_violins = counts_pp.chunks(list(adata.obs_names), chunk_size=12)
         adata = st.session_state['adata']
         # Provide info here
@@ -96,7 +101,7 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
                                   value=st.session_state['vthresh'])
         ss.save_state({'vthresh':violin_thresh})
 
-        violin1, vaxes = counts_pp.multiviolin(adata, split_long_violins=split_long_violins)
+        violin1, vaxes = st.cache_data(counts_pp.multiviolin)(adata, split_long_violins=split_long_violins)
         _ = [ax.axhline(y = st.session_state['vthresh'], color = 'red', linewidth = 1, linestyle = '--') for ax in vaxes]
         ss.save_state({'violin1':violin1})
         bef.pyplot(st.session_state['violin1'])
@@ -113,9 +118,12 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
         against_baseline = prep_exp.multiselect(label=f"Select groups within **{adata_vars[st.session_state['comp_var']]}** to compare against baseline ie choose B where B vs A", options = st.session_state['comparisonopts_nobaseline'], default = st.session_state['against_baseline'])
         ss.save_state({'against_baseline':against_baseline})
         equalvar = prep_exp.checkbox(label="Assume equal variance for comparisons", value = st.session_state['equalvar'], on_change=ss.binaryswitch, args = ('equalvar', ))
-
         test_fdr = prep_exp.selectbox("Select multiple test correction method", options = list(padj_mtds.keys()), index = list(padj_mtds.keys()).index(st.session_state['test_fdr']))
         ss.save_state({'test_fdr':test_fdr})
+        if st.session_state['test_fdr'] != 0:
+            use_corrected_pval = prep_exp.checkbox("Use corrected p-values for subsequent analyses", value=st.session_state['use_corrected_pval'], on_change=ss.binaryswitch, args= ('use_corrected_pval', ))
+        else:
+            ss.save_state({'use_corrected_pval':False})
         submit_comparison = prep_exp.checkbox("Selection complete", value = st.session_state['submit_comparison'], on_change=ss.binaryswitch, args=('submit_comparison', ))
 
         if submit_comparison:
@@ -131,7 +139,7 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
                                          against_baseline= st.session_state['against_baseline'],
                                          equalvar= st.session_state['equalvar'])
             
-            comps = tested.comparison_finder({'ttest':ttest})
+            comps = tested.comparison_finder({expr_key:ttest})
             test_fdr_match = padj_mtds[st.session_state['test_fdr']]
             adj_df_per_k = pd.DataFrame()
             if test_fdr_match is not None:
@@ -148,8 +156,8 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
             else:
                 adj_df_per_k = pd.concat([ratios, ttest], axis=1)
 
-            sort_by_comparison = pd.concat([adj_df_per_k.filter(regex=comp, axis=1) for comp in comps['ttest']], axis=1)
-            ss.save_state({'ready':sort_by_comparison, 'comparisons':comps})
+            sort_by_comparison = pd.concat([adj_df_per_k.filter(regex=comp, axis=1) for comp in comps[expr_key]], axis=1)
+            ss.save_state({'ready': {expr_key:sort_by_comparison}, 'comparisons':comps})
 
     else:
         adata = st.session_state['adata']
@@ -162,8 +170,13 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
         comparisonopts_nobaseline = [i for i in comparison_options if i not in st.session_state['baseline']]
         ss.save_state({'comparisonopts_nobaseline':comparisonopts_nobaseline})
         against_baseline = prep_exp.multiselect(label=f"Select the groups within {adata_vars[st.session_state['comp_var']]} to compare against baseline ie choose B where B vs A", options = st.session_state['comparisonopts_nobaseline'], default = st.session_state['against_baseline'])
+        ss.save_state({'against_baseline':against_baseline})
         test_fdr = prep_exp.selectbox("Select multiple test correction method", options = list(padj_mtds.keys()), index = list(padj_mtds.keys()).index(st.session_state['test_fdr']))
         ss.save_state({'test_fdr':test_fdr})
+        if st.session_state['test_fdr'] != 0:
+            use_corrected_pval = prep_exp.checkbox("Use corrected p-values for subsequent analyses", value=st.session_state['use_corrected_pval'], on_change=ss.binaryswitch, args= ('use_corrected_pval', ))
+        else:
+            ss.save_state({'use_corrected_pval':False})
         submit_comparison = prep_exp.checkbox("Selection complete", on_change=ss.binaryswitch, args=('submit_comparison', ))
         
         if submit_comparison:
@@ -173,10 +186,11 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
                                          against_baseline= st.session_state['against_baseline'],
                                          equalvar= st.session_state['equalvar'])
             
-            comps = tested.comparison_finder({'ttest':ttest})
+            comps = tested.comparison_finder({expr_key:ttest})
             test_fdr_match = padj_mtds[st.session_state['test_fdr']]
             adj_df_per_k = pd.DataFrame()
             if test_fdr_match is not None:
+                corrected_pval_df = pd.DataFrame()
                 for c in ttest.columns:
                     pval_col = ttest.loc[:,c].sort_values(ascending = True)
                     pval_array = pval_col.to_numpy()
@@ -184,13 +198,16 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
                                                                                       method=test_fdr_match,
                                                                                       is_sorted = True)
                     corrected_vals = pd.DataFrame(data = {f"adj_{c}":corrected}, index = pval_col.index)
-                    adj_df_per_k = pd.concat([adj_df_per_k, ratios, ttest, corrected_vals], axis=1)
+                    corrected_pval_df = pd.concat([corrected_pval_df, corrected_vals], axis=1)
+                adj_df_per_k = pd.concat([adj_df_per_k, ratios, ttest, corrected_pval_df], axis=1)
             else:
                 adj_df_per_k = pd.concat([ratios, ttest], axis=1)
 
-            sort_by_comparison = pd.concat([adj_df_per_k.filter(regex=comp, axis=1) for comp in comps['ttest']], axis=1)
-            ss.save_state({'ready':sort_by_comparison, 'comparisons':comps})
+            sort_by_comparison = pd.concat([adj_df_per_k.filter(regex=comp, axis=1) for comp in comps[expr_key]], axis=1)
+            ss.save_state({'ready': {expr_key:sort_by_comparison}, 'comparisons':comps})
 
 if st.session_state['ready'] is not None:
-    st.subheader("Pre-processed data ready")
-    st.dataframe(st.session_state['ready'])
+    log_dict = tested.log_transform(st.session_state['ready'], comparison_dict=st.session_state['comparisons'], use_corrected_pval=st.session_state['use_corrected_pval'])
+    ss.save_state({'log_dict_ready':log_dict})
+    st.header("Pre-processed data (fold-changes and p-values)")
+    _ = {st.subheader(k):st.dataframe(v) for k,v in st.session_state['ready'].items()}

@@ -41,10 +41,7 @@ if clear:
 # ## Note that the df_in is not actually able to be read in as data directly, but rather is just a number for my conditions to be met
 # ## In this case, st.cache_data around the read_xfile method is still required
 if len(df_query) != 0:
-    if clear:
-        ss.save_state(dict(df_in = None))
-    else:
-        ss.save_state(dict(df_in = df_query))
+    ss.save_state(dict(df_in = df_query))
 elif st.session_state['demo']:
     ss.save_state(dict(df_in = None))
 else:
@@ -68,14 +65,13 @@ if st.session_state['df_in'] is not None and st.session_state['demo'] is False:
         with file_opts:
             metadata = st.file_uploader(label="Upload gene expression's metadata here", type = ['csv', 'txt', 'xlsx'], accept_multiple_files=True)
             if len(metadata) != 0:
-                if clear:
-                    ss.save_state({'meta_in':None})
-                else:
-                    ss.save_state({'meta_in':metadata})
-                    meta_dict = fileuploads.read_xfile(st.session_state['meta_in'], ss_excel = 'meta_excel')
-                    ss.save_state({'expr_dict':cleandict,'meta_dict':meta_dict})
+                ss.save_state({'expr_dict':cleandict,'meta_in':metadata})
             else:
-                ss.save_state({'expr_dict':cleandict, 'meta_dict':st.session_state['meta_dict'], 'meta_in':st.session_state['meta_in']})
+                ss.save_state({'expr_dict':cleandict, 'meta_in':st.session_state['meta_in']})
+
+            if st.session_state['meta_in'] is not None:
+                meta_dict = fileuploads.read_xfile(st.session_state['meta_in'], ss_excel = 'meta_excel')
+                ss.save_state({'meta_dict':meta_dict})
 
 elif st.session_state['df_in'] is None and st.session_state['demo'] is True:
     testdata = pd.read_csv("accessory_files/demo_dataframe_corrected.csv", index_col=0)

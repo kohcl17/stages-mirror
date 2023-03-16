@@ -31,13 +31,22 @@ class FileUploads():
 
             elif tail == 'xlsx':
                 x = st.cache_data(pd.read_excel)(d, index_col=0, sheet_name=None, engine='openpyxl')
-                selected_sheet = st.multiselect(label="Select which sheet to read in", options=list(x.keys()), default = st.session_state[ss_excel])
-                if len(selected_sheet) != 0:
-                    for i in selected_sheet:
-                        df_dict[f"{head}_{i}"] = x[i]
-                    ss.save_state({ss_excel: selected_sheet})
+                if ss_excel == "df_excel":
+                    selected_sheet = st.multiselect(label="Select which sheet to read in", options=list(x.keys()), default = st.session_state[ss_excel])
+                    if len(selected_sheet) != 0:
+                        for i in selected_sheet:
+                            df_dict[f"{head}_{i}"] = x[i]
+                        ss.save_state({ss_excel: selected_sheet})
+                    else:
+                        ss.save_state({ss_excel: st.session_state[ss_excel]})
                 else:
-                    ss.save_state({ss_excel: st.session_state[ss_excel]})     
+                    selected_meta = st.multiselect(label="Select which sheet to read in for metadata", options=list(x.keys()), default = st.session_state[ss_excel])
+                    if len(selected_meta) != 0:
+                        for i in selected_meta:
+                            df_dict[f"{head}_{i}"] = x[i]
+                        ss.save_state({ss_excel: selected_meta})
+                    else:
+                        ss.save_state({ss_excel: st.session_state[ss_excel]})
         return df_dict
     
     def capslock_genes(self, df_dict):
