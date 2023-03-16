@@ -24,17 +24,6 @@ class FC_class():
             comparison_dict[k] = comparison
         return comparison_dict
 
-
-    def nclrs(self, comparison_dict):
-        combined_comparisons = set([s for v in comparison_dict.values() for s in v])
-        n_comps = len(combined_comparisons)
-        plotly_clrs = pc.qualitative.Plotly
-        if n_comps > 10:
-            colors = pc.sample_colorscale(plotly_clrs, [n/(n_comps -1) for n in range(n_comps)], colortype='tuple')
-        else:
-            colors = plotly_clrs[0:n_comps]
-        return colors
-
     def log_transform(self, cleandict, comparison_dict, use_corrected_pval=False):
         p_regex = "^(adj_pval)[_\-\s\.]" if use_corrected_pval else "^(p[\.\-value]*)[_\-\s\.]"
         neg_log_pval = "neg_log_adj_pval" if use_corrected_pval else "neg_log_pval"
@@ -50,8 +39,8 @@ class FC_class():
                 pval_pattern = f"{p_regex}{comp}"
                 pval_cols = [col for col in v.columns if re.match(pval_pattern, col, flags=re.I)]
                 pval = v.loc[:,pval_cols]
-                comp_df = pd.concat([np.log2(ratio), np.log10(pval)*(-1)], axis=1)
-                comp_df.columns = [f"log2FC_{comp}", f"{neg_log_pval}_{comp}"]
+                comp_df = pd.concat([np.log2(ratio), np.log10(pval)*(-1), pval], axis=1)
+                comp_df.columns = [f"log2FC_{comp}", f"{neg_log_pval}_{comp}", pval.columns[0]]
                 new_combined = pd.concat([new_combined, comp_df], axis=1)
             log_dict[k] = new_combined
         return log_dict

@@ -53,7 +53,7 @@ class DLs():
     #               mime="application/octet-stream"
     #               )
 
-    def create_pdf(fig, fn, graph_module = "pyplot"):
+    def create_pdf(self, fig, fn, graph_module = "pyplot"):
         buf = BytesIO()
         if graph_module == 'pyplot':
             fig.savefig(buf, format = 'pdf', bbox_inches = 'tight')
@@ -65,8 +65,5 @@ class DLs():
             file_name = f"{fn}.pdf",
             mime='application/pdf'
         )
-
-    def intro():
-        st.write("Hello")
 
 file_downloads = DLs()
