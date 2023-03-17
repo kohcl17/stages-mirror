@@ -14,12 +14,22 @@ import seaborn as sns
 
 from helper_functions.session_state import ss
 from helper_functions.downloads import file_downloads
-from helper_functions.clustergram import genePP
+from helper_functions.clustergram import genePP, clustergram
 
 ss.initialise_state({'cluster_useDEG': None,
                      'cluster_textgene':'IFIT3;IL15;DDX60;ILK;IGFLR1',
-                     'clust_reset':True,
-                     'clust_fc':0.0})
+                     'clust_cols': True,
+                     'clust_dendror':0.12,
+                     'clust_dendroc':0.08,
+                     'clust_width': 5,
+                     'clust_height': 10,
+                     'clust_vminmax':(-2.0, 2.0),
+                     'clust_cbarleft':0.78,
+                     'clust_cbarbottom':0.05,
+                     'clust_cbarwidth':0.15,
+                     'clust_cbarheight':0.02,
+                     'clust_submit':True
+                     })
 
 clust_opts = st.sidebar.expander("Clustergram options", expanded=True)
 degs = st.session_state['degs']
@@ -46,13 +56,53 @@ else:
                                             placeholder="Enter genes with one of the following delimiters: line breaks, commas, or semicolons")
     cluster_textgene = ss.save_state({'cluster_textgene':cluster_textgene})
 
-resetter = clust_opts.checkbox("Reset clustergram to default settings", on_change=ss.binaryswitch, args=("clust_reset", ), value=st.session_state['clust_reset'])
+# Customisation settings
+## Clustering options
+with clust_opts:
+    cluster_cols = st.checkbox("Cluster columns", value = st.session_state['clust_cols'], on_change=ss.binaryswitch, args=('clust_cols', ))
+    dendrogram_r = st.number_input("Adjust relative row dendrogram length", min_value=0.01, max_value=1.00, step=0.01, value= st.session_state['clust_dendror'])
+    if cluster_cols:
+        dendrogram_c = st.number_input("Adjust relative column dendrogram height", min_value=0.01, max_value=1.00, step=0.01, value=st.session_state['clust_dendroc'])
+        ss.save_state({'clust_dendroc':dendrogram_c})
 
-if resetter:
-    ss.save_state({'clust_fc':0.0})
-clust_fc = clust_opts.number_input("Adjust absolute fold-change here",
-                                   help="The app will plot the values between the user-set range",
-                                   min_value=0.0, max_value=100.0, step=0.1, value= st.session_state['clust_fc'])
-get_genes = genePP.genes_used(degs=degs, cluster_useDEG=st.session_state['cluster_useDEG'], cluster_textgene=st.session_state['cluster_textgene'])
-gene_vals = genePP.get_gene_vals(st.session_state['log_dict_ready'], get_genes, resetter=resetter, fc_cutoff = clust_fc)
-st.write(gene_vals)
+    ## Size and colourbar options
+    c_width = st.number_input("Clustergram width (in inches)", min_value=3, max_value=30, step=1, value=st.session_state['clust_width'])
+    c_height = st.number_input("Clustergram height (in inches)", min_value=3, max_value=60, step=1, value=st.session_state['clust_height'])
+    c_vminmax = st.slider("Adjust minimum and maximum values of the colour bar", min_value=-10.0, max_value=10.0, step = 0.5, value=st.session_state['clust_vminmax'])
+    cbar_left = st.number_input("Adjust colourbar position from left", min_value=0.0, max_value=1.0, step=0.01, value = st.session_state['clust_cbarleft'])
+    cbar_bottom = st.number_input("Adjust colourbar position from bottom", min_value=0.0, max_value=1.0, step=0.01, value = st.session_state['clust_cbarbottom'])
+    cbar_width = st.number_input("Adjust colourbar width", min_value=0.0, max_value=1.0, step=0.01, value = st.session_state['clust_cbarwidth'])
+    cbar_height = st.number_input("Adjust colourbar height", min_value=0.0, max_value=1.0, step=0.01, value = st.session_state['clust_cbarheight'])
+
+    plot_clust = st.checkbox("Plot pathway clustergram", value=st.session_state['clust_submit'], on_change=ss.binaryswitch, args=('clust_submit', ))
+
+if plot_clust:
+    ss.save_state({'clust_dendror':dendrogram_r,
+                   'clust_width':c_width,
+                   'clust_height':c_height,
+                   'clust_vminmax':c_vminmax,
+                   'clust_cbarleft':cbar_left,
+                   'clust_cbarbottom':cbar_bottom,
+                   'clust_cbarwidth':cbar_width,
+                   'clust_cbarheight':cbar_height
+                   })
+    get_genes = genePP.genes_used(degs=degs, cluster_useDEG=st.session_state['cluster_useDEG'], cluster_textgene=st.session_state['cluster_textgene'])
+    gene_vals = genePP.get_gene_vals(st.session_state['log_dict_ready'], get_genes)
+    
+    try:
+        get_clustergram = clustergram.cluster_plot(gene_vals,
+                                                vminmax=st.session_state['clust_vminmax'],
+                                                cbar_left=st.session_state['clust_cbarleft'],
+                                                cbar_bottom=st.session_state['clust_cbarbottom'],
+                                                cbar_width=st.session_state['clust_cbarwidth'],
+                                                cbar_height=st.session_state['clust_cbarheight'],
+                                                width=st.session_state['clust_width'],
+                                                height=st.session_state['clust_height'],
+                                                dendrogram_r=st.session_state['clust_dendror'],
+                                                dendrogram_c=st.session_state['clust_dendroc'],
+                                                cluster_cols=st.session_state['clust_cols']
+        )
+        st.pyplot(get_clustergram)
+    
+    except ValueError:
+        st.error("At least 2 genes must be entered!")
