@@ -405,7 +405,8 @@ class DEGs():
                             font=dict(family='Arial', size=14), width=u_width, height=u_height)
         stacked1.update_xaxes(automargin=True)
 
-        return stacked1, proportions, deg_dict
+        proportions = {k:v for k,v in proportions.items() if type(v) != list}
+        return stacked1, proportions
 
 
 preDE = PreDEGs()

@@ -94,6 +94,7 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
         # Provide info here
         st.info("The violin plots From the pre-processing options in the sidebar, select a threshold value that separates the violin plots into two (narrowest point).")
         bef, aft = st.tabs(['Before pre-processing', 'After pre-processing'])
+        
         # Create violin plot
         max_y = counts_pp.violin_maxy(adata)
         violin_thresh = prep_exp.slider(label = "Select violin plot threshold", min_value = 0, max_value= max_y,
@@ -133,7 +134,10 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
             ss.save_state({'violin2':violin2, 'adata':adata})
             aft.pyplot(st.session_state['violin2'])
 
-            ratios = counts_pp.ratio(adata, comp_var = adata_vars[st.session_state['comp_var']], baseline= st.session_state['baseline'], against_baseline= st.session_state['against_baseline'])
+            ratios = counts_pp.ratio(adata, comp_var = adata_vars[st.session_state['comp_var']],
+                                     baseline= st.session_state['baseline'],
+                                     against_baseline= st.session_state['against_baseline'],
+                                     is_log=False)
             ttest = counts_pp.pval_scipy(adata, comp_var = adata_vars[st.session_state['comp_var']],
                                          baseline= st.session_state['baseline'],
                                          against_baseline= st.session_state['against_baseline'],
@@ -171,6 +175,7 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
         ss.save_state({'comparisonopts_nobaseline':comparisonopts_nobaseline})
         against_baseline = prep_exp.multiselect(label=f"Select the groups within {adata_vars[st.session_state['comp_var']]} to compare against baseline ie choose B where B vs A", options = st.session_state['comparisonopts_nobaseline'], default = st.session_state['against_baseline'])
         ss.save_state({'against_baseline':against_baseline})
+        equalvar = prep_exp.checkbox(label="Assume equal variance for comparisons", value = st.session_state['equalvar'], on_change=ss.binaryswitch, args = ('equalvar', ))
         test_fdr = prep_exp.selectbox("Select multiple test correction method", options = list(padj_mtds.keys()), index = list(padj_mtds.keys()).index(st.session_state['test_fdr']))
         ss.save_state({'test_fdr':test_fdr})
         if st.session_state['test_fdr'] != 0:
@@ -180,7 +185,10 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
         submit_comparison = prep_exp.checkbox("Selection complete", on_change=ss.binaryswitch, args=('submit_comparison', ))
         
         if submit_comparison:
-            ratios = counts_pp.ratio(adata, comp_var = adata_vars[st.session_state['comp_var']], baseline= st.session_state['baseline'], against_baseline= st.session_state['against_baseline'])
+            ratios = counts_pp.ratio(adata, comp_var = adata_vars[st.session_state['comp_var']],
+                                     baseline= st.session_state['baseline'],
+                                     against_baseline= st.session_state['against_baseline'],
+                                     is_log = True)
             ttest = counts_pp.pval_scipy(adata, comp_var = adata_vars[st.session_state['comp_var']],
                                          baseline= st.session_state['baseline'],
                                          against_baseline= st.session_state['against_baseline'],

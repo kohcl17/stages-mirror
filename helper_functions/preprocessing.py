@@ -75,14 +75,26 @@ class RNAseq():
         violin1.suptitle("Log1p counts per sample")
         return violin1, axes
 
-    def ratio(self, adata, comp_var, baseline, against_baseline) -> pd.DataFrame:
+    def ratio(self, adata, comp_var, baseline, against_baseline, is_log=False) -> pd.DataFrame:
         ratio_df = pd.DataFrame()
-        for base in baseline:
-            avg_base = adata[adata.obs[comp_var] == base].to_df().mean(axis=0) # Filter with obs first, then to_df() because otherwise it's just an array without index/columns, lastly mean
-            for comp in against_baseline:
-                avg_comp = adata[adata.obs[comp_var] == comp].to_df().mean(axis=0)
-                ratio = pd.DataFrame(avg_comp / avg_base, columns = [f'ratio_{comp}_vs_{base}'])
-                ratio_df = pd.concat([ratio_df, ratio], axis=1)
+        if not is_log:
+            for base in baseline:
+                avg_base = adata[adata.obs[comp_var] == base].to_df().mean(axis=0) # Filter with obs first, then to_df() because otherwise it's just an array without index/columns, lastly mean
+                for comp in against_baseline:
+                    avg_comp = adata[adata.obs[comp_var] == comp].to_df().mean(axis=0)
+                    ratio = pd.DataFrame(avg_comp / avg_base, columns = [f'ratio_{comp}_vs_{base}'])
+                    ratio_df = pd.concat([ratio_df, ratio], axis=1)
+        else:
+            for base in baseline:
+                basedf = adata[adata.obs[comp_var] == base].to_df()
+                unlogbase = 2**basedf
+                avg_base = unlogbase.mean(axis=0)
+                for comp in against_baseline:
+                    compdf = adata[adata.obs[comp_var] == comp].to_df()
+                    unlogcomp = 2**compdf
+                    avg_comp = unlogcomp.mean(axis=0)
+                    ratio = pd.DataFrame(avg_comp / avg_base, columns = [f'ratio_{comp}_vs_{base}'])
+                    ratio_df = pd.concat([ratio_df, ratio], axis=1)
         return ratio_df
 
     def pval_scipy(self, adata, comp_var, baseline, against_baseline, equalvar=False) -> pd.DataFrame:

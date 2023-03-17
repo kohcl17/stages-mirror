@@ -31,7 +31,8 @@ ss.initialise_state({'reset_volcano':False,
                      'bar_pval':0.05,
                      'bar_fc':1.30,
                      'bar_width':800,
-                     'bar_height':600})
+                     'bar_height':600,
+                     'degs':None})
 
 st.header("Differential Expression Analysis")
 
@@ -98,24 +99,26 @@ cdf_plot = preDE.deg_cdf(st.session_state['ready'],
 cdf_t.plotly_chart(cdf_plot, theme=None, use_container_width=True)
 
 ######### BAR PLOT #################
-deg_opts = st.sidebar.expander("Expand for stacked bar chart", expanded=False)
+deg_opts = st.sidebar.expander("Differential expression options", expanded=False)
 bar_pval = deg_opts.number_input("Choose p-value threshold for differentially expressed genes", min_value = 0.00, max_value = 1.00, step = 0.01, value = st.session_state['cdf_pthresh'], key='p2')
 bar_fc = deg_opts.slider(label="Adjust fold-change cutoff here ", value=st.session_state['bar_fc'], min_value=0.0, max_value=20.0, step=0.1)
-bar_width = deg_opts.slider(label="Adjust plot width (in px)", min_value=300, max_value=1200, value=st.session_state['bar_width'], step=50)
-bar_height = deg_opts.slider(label="Adjust plot height (in px)", min_value=300, max_value=1200, value=st.session_state['bar_height'], step=50)
+bar_width = deg_opts.slider(label="Adjust bar plot width (in px)", min_value=300, max_value=1200, value=st.session_state['bar_width'], step=50)
+bar_height = deg_opts.slider(label="Adjust bar plot height (in px)", min_value=300, max_value=1200, value=st.session_state['bar_height'], step=50)
 
 ss.save_state({'bar_pval':bar_pval,
                'bar_fc':bar_fc,
                'bar_width':bar_width,
                'bar_height':bar_height})
 
-stacked1, proportions, deg_dict = DE.degs(st.session_state['log_dict_ready'],
+stacked1, proportions = DE.degs(st.session_state['log_dict_ready'],
                                           st.session_state['comparisons'],
                                           pval_cutoff=st.session_state['bar_pval'],
                                           fc_cutoff=st.session_state['bar_fc'],
                                           u_width=st.session_state['bar_width'],
                                           u_height=st.session_state['bar_height'],
                                           use_corrected_pval=st.session_state['use_corrected_pval'])
+
+ss.save_state({'degs':proportions})
 
 with bar_t:
     st.plotly_chart(stacked1, theme=None, use_container_width=False)
@@ -124,6 +127,6 @@ with bar_t:
 ####### DATA OUTPUT ###############
 with data_t:
     st.info("Users may select the gene names within this dataframe and copy them for downstream analysis.")
-    for k, v in deg_dict.items():
+    for k, v in st.session_state['degs'].items():
         st.write(f"**{k}**", v)
-    st.download_button(label="Download DEGs", data=file_downloads.to_excel(deg_dict.values()), file_name="DEGs.xlsx")
+    st.download_button(label="Download DEGs", data=file_downloads.to_excel(st.session_state['degs'].values()), file_name="DEGs.xlsx")
