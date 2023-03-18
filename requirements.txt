@@ -17,3 +17,7 @@ phik
 seaborn
 regex
 kaleido
+statsmodels
+decoupler
+anndata
+scanpy

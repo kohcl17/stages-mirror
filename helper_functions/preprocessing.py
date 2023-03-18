@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 import decoupler as dc
-import pingouin as pg
+# import pingouin as pg
 from scipy import stats
 
 class FC_class():

@@ -100,7 +100,7 @@ cdf_t.plotly_chart(cdf_plot, theme=None, use_container_width=True)
 
 ######### BAR PLOT #################
 deg_opts = st.sidebar.expander("Differential expression options", expanded=True)
-bar_pval = deg_opts.number_input("Choose p-value threshold for differentially expressed genes", min_value = 0.00, max_value = 1.00, step = 0.01, value = st.session_state['cdf_pthresh'], key='p2')
+bar_pval = deg_opts.number_input("Choose p-value threshold for differentially expressed genes", min_value = 0.00, max_value = 1.00, step = 0.01, value = st.session_state['cdf_pthresh'], key='cdf_pthresh')
 bar_fc = deg_opts.slider(label="Adjust fold-change cutoff here ", value=st.session_state['bar_fc'], min_value=0.0, max_value=20.0, step=0.1)
 bar_width = deg_opts.slider(label="Adjust bar plot width (in px)", min_value=300, max_value=1200, value=st.session_state['bar_width'], step=50)
 bar_height = deg_opts.slider(label="Adjust bar plot height (in px)", min_value=300, max_value=1200, value=st.session_state['bar_height'], step=50)
