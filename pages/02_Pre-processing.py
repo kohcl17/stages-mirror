@@ -103,7 +103,10 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
         ss.save_state({'vthresh':violin_thresh})
 
         violin1, vaxes = st.cache_data(counts_pp.multiviolin)(adata, split_long_violins=split_long_violins)
-        _ = [ax.axhline(y = st.session_state['vthresh'], color = 'red', linewidth = 1, linestyle = '--') for ax in vaxes]
+        if len(split_long_violins) == 1:
+            _ = vaxes.axhline(y=st.session_state['vthresh'], color ='red', linewidth=1, linestyle='--')
+        else:
+            _ = [ax.axhline(y = st.session_state['vthresh'], color = 'red', linewidth = 1, linestyle = '--') for ax in vaxes]
         ss.save_state({'violin1':violin1})
         bef.pyplot(st.session_state['violin1'])
 
@@ -217,6 +220,6 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
 if st.session_state['ready'] is not None:
     log_dict = tested.log_transform(st.session_state['ready'], comparison_dict=st.session_state['comparisons'], use_corrected_pval=st.session_state['use_corrected_pval'])
     ss.save_state({'log_dict_ready':log_dict})
-    st.header("Pre-processed data (fold-changes and p-values)")
+    st.header("Pre-processed data (ratios and p-values)")
     _ = {st.subheader(k):st.dataframe(v) for k,v in st.session_state['ready'].items()}
     

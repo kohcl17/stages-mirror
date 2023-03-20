@@ -3,6 +3,8 @@ import pandas as pd
 from helper_functions.date_gene import qc_df
 from helper_functions.session_state import ss
 
+from io import StringIO
+from collections import defaultdict
 
 class FileUploads():
     def read_xfile(self, df_query, ss_excel):
@@ -58,5 +60,16 @@ class FileUploads():
 
         return cleandict
     
+    def gmt_to_dict(self, add_geneset_in):
+        geneset_dicts = defaultdict(dict)
+        for geneset in add_geneset_in:
+            upload_to_str = StringIO(st.session_state['add_geneset_in'][0].getvalue().decode("utf-8"))
+            fname = geneset.name
+            for line in upload_to_str.readlines():
+                break_mod = line.split("\t")
+                modname = break_mod[0]
+                genes = break_mod[2:None]
+                geneset_dicts[fname.replace(".gmt","")][modname] = genes
+        return dict(geneset_dicts)
     
 fileuploads = FileUploads()

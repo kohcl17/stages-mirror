@@ -67,11 +67,17 @@ class RNAseq():
         '''
         unit_height = 3
         violin1, axes = plt.subplots(figsize = (10, len(split_long_violins) * unit_height), nrows=len(split_long_violins), ncols=1, sharey = True, constrained_layout=True)
-        for a, ax in zip(split_long_violins, axes):
-            dc.plot_violins(_adata[a,:],
-                            log = True,
-                            ax = ax,
-                            color = "#00ABFD")
+        if len(split_long_violins) == 1:
+            dc.plot_violins(_adata,
+                            log=True,
+                            ax=axes,
+                            color="#00ABFD")
+        else:
+            for a, ax in zip(split_long_violins, axes):
+                dc.plot_violins(_adata[a,:],
+                                log = True,
+                                ax = ax,
+                                color = "#00ABFD")
         violin1.suptitle("Log1p counts per sample")
         return violin1, axes
 

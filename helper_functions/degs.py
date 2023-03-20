@@ -329,6 +329,7 @@ class DEGs():
     '''
     def degs(self, log_ready_dict, comparison_dict, pval_cutoff=0.0, fc_cutoff=0.0, u_width = 800, u_height=600, use_corrected_pval=False):
         log2fc_cutoff = np.log2(fc_cutoff)
+        p_format = "adjusted p-value" if use_corrected_pval else "p-value"
         ####################################### Filter DF by Pvals and FC #################################################
         proportions, deg_dict = {}, {}
         for k,v in log_ready_dict.items():
@@ -399,7 +400,7 @@ class DEGs():
                 stacked1.for_each_trace(lambda trace:trace.update(showlegend=False) if (trace.name in names) else names.add(trace.name))
         
         stacked1.update_layout(showlegend=True, barmode='stack',
-                            title="Number of DEGs across comparisons (based on selected cutoffs)",
+                            title=f"Number of DEGs across comparisons<br>(FC {fc_cutoff}; {p_format} {pval_cutoff})",
                             title_x=0.5,
                             legend_title_text='DEGs:',
                             font=dict(family='Arial', size=14), width=u_width, height=u_height)

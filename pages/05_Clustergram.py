@@ -22,7 +22,7 @@ ss.initialise_state({'cluster_useDEG': None,
                      'clust_dendror':0.12,
                      'clust_dendroc':0.08,
                      'clust_width': 5,
-                     'clust_height': 10,
+                     'clust_height': 5,
                      'clust_vminmax':(-2.0, 2.0),
                      'clust_cbarleft':0.78,
                      'clust_cbarbottom':0.05,
@@ -86,7 +86,7 @@ if plot_clust:
                    'clust_cbarwidth':cbar_width,
                    'clust_cbarheight':cbar_height
                    })
-    get_genes = genePP.genes_used(degs=degs, cluster_useDEG=st.session_state['cluster_useDEG'], cluster_textgene=st.session_state['cluster_textgene'])
+    get_genes, _ = genePP.genes_used(degs=degs, useDEG=st.session_state['cluster_useDEG'], textgene=st.session_state['cluster_textgene'])
     gene_vals = genePP.get_gene_vals(st.session_state['log_dict_ready'], get_genes)
     
     try:

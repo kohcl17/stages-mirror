@@ -12,18 +12,20 @@ import textwrap
 from helper_functions.session_state import ss
 
 class GeneHandler():
-    def genes_used(self, degs, cluster_useDEG= None, cluster_textgene=None):
-        if cluster_useDEG is not None:
-            get_dict_values = [degs[s].index.to_list() for s in cluster_useDEG] # Get the deg list from the selected keys
+    def genes_used(self, degs, useDEG= None, textgene=None):
+        if useDEG is not None:
+            get_dict_values = [degs[s].index.to_list() for s in useDEG] # Get the deg list from the selected keys
+            get_dict = {k:degs[k].index.to_list() for k in useDEG}
             flatten_dict_values = list(set([item for sublist in get_dict_values for item in sublist]))
             gene_final = flatten_dict_values
         
-        if cluster_textgene is not None:
-            genes = cluster_textgene.replace(";", ",").replace(" ", ",").replace("\n", ",").split(',')
+        if textgene is not None:
+            genes = textgene.replace(";", ",").replace(" ", ",").replace("\n", ",").split(',')
             # where the user may use multiple delimiters, convert the other delimiters to commas, and then split by comma
             gene_final = [x.upper() for x in set(genes) if x != ""] # remove spaces in between and make sure to capitalise genes
+            get_dict = {'user_genes':gene_final}
 
-        return gene_final
+        return gene_final, get_dict
     
     def get_gene_vals(self, log_dict_ready, genes_used=None):
         compiled_logFC = pd.DataFrame()

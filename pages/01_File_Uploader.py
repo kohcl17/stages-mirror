@@ -9,7 +9,7 @@ from helper_functions.uploads import fileuploads
 
 # ###################################################### SESSION STATES ##################################################
 st.session_state.update(st.session_state)
-ss.initialise_state(state_dict = {'file_type':'Fold-Changes and P-values',
+ss.initialise_state(state_dict = {'file_type':'Ratios and P-values',
                                   'df_in':None,
                                   'demo':False,
                                   'view_df':False,
@@ -27,7 +27,7 @@ ss.initialise_state(state_dict = {'file_type':'Fold-Changes and P-values',
 file_opts = st.sidebar.expander("File Upload Options", expanded = True)
 use_demo = file_opts.checkbox("Use demo dataset", value=st.session_state['demo'], on_change=ss.binaryswitch, args = ('demo',))
 
-ftype_list = ['RNAseq Counts', 'Log2-Normalised Data', 'Fold-Changes and P-values']
+ftype_list = ['RNAseq Counts', 'Log2-Normalised Data', 'Ratios and P-values']
 file_type = file_opts.radio(label="Select data type for upload", options = ftype_list,
                              index = ftype_list.index(st.session_state['file_type']))
 ss.save_state(dict(file_type = file_type))
@@ -88,7 +88,7 @@ else:
 view_df = file_opts.checkbox("View demo/uploaded gene expression dataset", value = st.session_state['view_df'], on_change=ss.binaryswitch, args=('view_df', ))
 
 if view_df is True:
-    main_expr, meta_expr, anova_expr = st.tabs(['Gene Expression Data', 'Metadata', 'Fold-Change and P-value Data'])
+    main_expr, meta_expr, anova_expr = st.tabs(['Gene Expression Data', 'Metadata', 'Ratios and P-value Data'])
     exprdict, metadatadict, anovadict = st.session_state['expr_dict'], st.session_state['meta_dict'], st.session_state['anova_dict']
     _ = {main_expr.subheader(k):main_expr.dataframe(v) for k,v in exprdict.items()} if exprdict is not None else main_expr.info("No gene expression counts uploaded")
     _ = {meta_expr.subheader(k):meta_expr.dataframe(v) for k,v in metadatadict.items()} if metadatadict is not None else meta_expr.info("No metadata uploaded")
