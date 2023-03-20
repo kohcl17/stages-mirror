@@ -29,12 +29,18 @@ ss.initialise_state({'add_geneset_in':None,
                       'enr_textgene':'COL1A2;DCN;IL6;IL8;LIF;MGP;MMP1;MMP2;MMP9',
                       'enr_pthresh':0.05,
                       'enr_showX':10,
-                      'plot_enr':True
+                      'plot_enr':True,
+                      'enr_genedict':None,
+                      'enr_ht':500,
+                      'enr_res_all':None,
+                      'enr_res_sig':None
                       }
                       )
 
 enr_opts = st.sidebar.expander("Enrichr Options", expanded=True)
 add_geneset_in = enr_opts.file_uploader("Upload a gene set here (optional)", type="gmt", accept_multiple_files=True)
+
+enr_plots_t, enr_data_t = st.tabs(["Bar plots", "Data"])
 
 if len(add_geneset_in) != 0:
     ss.save_state({'add_geneset_in': add_geneset_in})
@@ -79,13 +85,31 @@ enr_pthresh = enr_opts.number_input("Choose adjusted p-value threshold of enrich
 enr_showX = enr_opts.number_input("Display top n pathways from selected p-value cutoff", min_value=1, max_value=100, step=1,
                                      value=st.session_state['enr_showX'],
                                      help="Show only the top n pathways from a filtered set of pathways")
+enr_ht = enr_opts.number_input("Bar plot height (in px)", min_value=200, max_value=1600, step=50, value=st.session_state['enr_ht'])
 ss.save_state({'enr_pthresh': round(enr_pthresh,2),
-               'enr_showX':enr_showX})
+               'enr_showX':enr_showX,
+               'enr_ht':enr_ht})
 plot_enr = enr_opts.checkbox("Plot enrichr plot", value = st.session_state['plot_enr'], on_change=ss.binaryswitch, args=("plot_enr", ))
 
 if plot_enr:
     _, gene_dict = genePP.genes_used(degs=degs, useDEG=st.session_state['enr_useDEG'], textgene=st.session_state['enr_textgene'])
+    ss.save_state({'enr_genedict':gene_dict})
     get_geneset = st.session_state['geneset_dict'][st.session_state['geneset_enr']]
-    res_all, res_sig = enr.execute_enrichr(gene_dict=gene_dict, select_dataset=get_geneset, enr_pthresh=st.session_state['enr_pthresh'], enr_showX=st.session_state['enr_showX'])
-    enr_plots = enr.enr_barplot(res_sig, enr_useDEG=st.session_state['enr_useDEG'], enr_pthresh=st.session_state['enr_pthresh'], enr_showX=st.session_state['enr_showX'])
-    show_enrplots = st.plotly_chart(enr_plots, theme=None, use_container_width=False)
+    if len(gene_dict) == 0:
+        st.warning("Please ensure that there is more than 1 gene from DEGs or genes are manually entered!")
+    else:
+        res_all, res_sig = enr.execute_enrichr(gene_dict=st.session_state['enr_genedict'], select_dataset=get_geneset, enr_pthresh=st.session_state['enr_pthresh'], enr_showX=st.session_state['enr_showX'])
+        ss.save_state({'enr_res_all':res_all,
+                       'enr_res_sig':res_sig})
+        enr_plots = enr.enr_barplot(st.session_state['enr_res_sig'],
+                                    enr_useDEG=st.session_state['enr_useDEG'],
+                                    enr_pthresh=st.session_state['enr_pthresh'],
+                                    enr_showX=st.session_state['enr_showX'],
+                                    enr_ht=st.session_state['enr_ht'])
+        with enr_plots_t:
+            st.plotly_chart(enr_plots, theme=None, use_container_width=False)
+            file_downloads.create_pdf(enr_plots, fn="Enrichr plots", graph_module="plotly")
+        for k,v in res_all.items():
+            enr_data_t.write(f"**{k}**")
+            enr_data_t.dataframe(v)
+        enr_data_t.download_button(label="Download Enrichr Pathways", data=file_downloads.to_excel(st.session_state['enr_res_all'].values()), file_name="Enrichr_results.xlsx")

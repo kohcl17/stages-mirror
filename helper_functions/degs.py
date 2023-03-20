@@ -59,7 +59,7 @@ class PreDEGs():
                     pval_name = f'neg_log_adj_pval_{tp}' if use_corrected_pval else f'neg_log_pval_{tp}'
                     fc_name = f'log2FC_{tp}'
                     mini_df = df[[fc_name, pval_name]]
-                    max_y = math.ceil(mini_df[pval_name].max())
+                    max_y = math.ceil(mini_df[pval_name].max()) + 1
                     highest_y = max_y if max_y > highest_y else highest_y
                     
                     if xaxes != (0.0, 0.0) and yaxes != (0.0):
@@ -96,9 +96,9 @@ class PreDEGs():
                         pass
 
                     if yaxes != (0.0):
-                        plt.ylim(0.0, yaxes)
+                        plt.ylim(-0.50, yaxes)
                     else:
-                        plt.ylim(0.0, highest_y)
+                        plt.ylim(-0.50, highest_y)
 
                     if interactive_volcano:
                         volcano1.add_trace(go.Scatter(x=user_filter[fc_name], y=user_filter[pval_name],

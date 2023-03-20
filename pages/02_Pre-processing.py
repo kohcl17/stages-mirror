@@ -55,6 +55,11 @@ if anovadict is not None:
     test_fdr = prep_exp.selectbox("Select multiple test correction method", options = list(padj_mtds.keys()), index = list(padj_mtds.keys()).index(st.session_state['test_fdr']))
     ss.save_state({'test_fdr':test_fdr})
     test_fdr_match = padj_mtds[test_fdr]
+
+    if st.session_state['test_fdr'] != 0:
+            use_corrected_pval = prep_exp.checkbox("Use corrected p-values for subsequent analyses", value=st.session_state['use_corrected_pval'], on_change=ss.binaryswitch, args= ('use_corrected_pval', ))
+    else:
+        ss.save_state({'use_corrected_pval':False})
     
     if test_fdr_match is not None:
         for k,v in comps.items():

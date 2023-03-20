@@ -16,6 +16,7 @@ class GeneHandler():
         if useDEG is not None:
             get_dict_values = [degs[s].index.to_list() for s in useDEG] # Get the deg list from the selected keys
             get_dict = {k:degs[k].index.to_list() for k in useDEG}
+            get_dict = {k:v for k,v in get_dict.items() if len(v) !=0}
             flatten_dict_values = list(set([item for sublist in get_dict_values for item in sublist]))
             gene_final = flatten_dict_values
         
@@ -24,7 +25,11 @@ class GeneHandler():
             # where the user may use multiple delimiters, convert the other delimiters to commas, and then split by comma
             gene_final = [x.upper() for x in set(genes) if x != ""] # remove spaces in between and make sure to capitalise genes
             get_dict = {'user_genes':gene_final}
-
+            get_dict = {k:v for k,v in get_dict.items() if len(v) !=0}
+        
+        if textgene == "None":
+            gene_final = []
+            get_dict = {}
         return gene_final, get_dict
     
     def get_gene_vals(self, log_dict_ready, genes_used=None):

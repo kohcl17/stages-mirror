@@ -49,40 +49,47 @@ class Enrichr_STAGES():
             enr_all[k] = data
         return enr_all, enr_significant
             
-    def enr_barplot(self, enr_significant, enr_useDEG=None, enr_pthresh=0.05, enr_showX=10):
+    def enr_barplot(self, enr_significant, enr_useDEG=None, enr_pthresh=0.05, enr_showX=10, enr_ht=500):
         if enr_useDEG is not None: # which implies it will require DEGs
             fig = make_subplots(rows=len(enr_significant), cols=1, subplot_titles=list(enr_significant.keys()),
-                                    x_title="-log10 (adjusted p-value)", shared_xaxes=True) # make a subplot regardless
+                                x_title="-log10 (adjusted p-value)", shared_xaxes=True,
+                                vertical_spacing=0.05) # make a subplot regardless
                 
             i = 1
-            optimal_height = 65
-            total_pws = 0
             for k,v in enr_significant.items(): # need to rethink this part as it creates a subplot for every comparison
                 wrap_enr_sig = ["<br>".join(textwrap.wrap(a, 30)) for a in v.index]
-                total_pws += len(wrap_enr_sig)
                 marker_clr = "#EF553B" if "UP" in k else "#636EFA"
-                fig.add_trace(go.Bar(x=v['-logadjP'], y=wrap_enr_sig, orientation='h', marker_color=marker_clr), row = i, col = 1)
+                fig.add_trace(go.Bar(x=v['-logadjP'], y=wrap_enr_sig, 
+                                     orientation='h', marker_color=marker_clr,
+                                     name="",
+                                     hovertemplate="<b>%{y}</b><br>-logadjP: %{x}<br>Enriched genes: %{customdata}"),
+                                     row = i, col = 1)
                 i += 1
             fig.update_yaxes(title="Term", tickmode='linear', tick0=0, dtick=0, automargin=True)
             fig.update_layout(title=f"Enriched Pathways (Top {enr_showX}), adjusted p-value < {enr_pthresh}", title_x=0.5,
                               showlegend=False,
                               yaxis={'tickmode': 'linear'},
                               font=dict(family='Arial', size=14),
-                              width = 750, height = optimal_height * total_pws * len(enr_significant)*0.75)
-            st.write(optimal_height)
+                              width = 750, height = enr_ht)
+            
 
         else:
             fig = go.Figure()
             user_df = enr_significant['user_genes']
             wrap_usergenes = ["<br>".join(textwrap.wrap(a, 50)) for a in user_df.index]
-            optimal_height = len(enr_significant) * 65 * len(wrap_usergenes)
-            fig.add_trace(go.Bar(x=user_df['-logadjP'], y=wrap_usergenes, orientation='h', marker_color="#4FC04F"))
+            fig.add_trace(go.Bar(x=user_df['-logadjP'], y=wrap_usergenes,
+                                 customdata=user_df['Genes'],
+                                 orientation='h',
+                                 marker_color="#4FC04F",
+                                 name="",
+                                 hovertemplate="<b>%{y}</b><br>-logadjP: %{x}<br>Enriched genes: %{customdata}")
+                                 )
             fig.update_yaxes(title="Term", tickmode='linear', tick0=0, dtick=0, automargin=True)
             fig.update_layout(title=f"Enriched Pathways (Top {enr_showX}) for user-input genes<br>adjusted p-value < {enr_pthresh}", title_x=0.5,
                             showlegend=False,
                             yaxis={'tickmode': 'linear'},
                             font=dict(family='Arial', size=14),
-                            width = 750, height = optimal_height)
+                            width = 750, height = enr_ht)
         return fig
 
 enr = Enrichr_STAGES()
