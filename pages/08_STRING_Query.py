@@ -15,6 +15,7 @@ ss.initialise_state({'string_useDEG':None,
                      'string_textgene':'COL1A2;DCN;IL6;IL8;LIF;MGP;MMP1;MMP2;MMP9',
                      'plot_string':True})
 
+st.header("STRING Network Query")
 str_netplots, str_other = st.tabs(['STRING Network Plots', "Data"])
 string_opts = st.sidebar.expander("STRINGdb Query Options", expanded=True)
 degs = st.session_state['degs'] if "degs" in st.session_state else None

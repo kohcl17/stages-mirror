@@ -22,7 +22,7 @@ ss.initialise_state(state_dict = {'file_type':'Ratios and P-values',
                                   })
 # ########################################################################################################################
 
-
+st.header("File Uploader")
 # ################################################# File Uploader ########################################################
 file_opts = st.sidebar.expander("File Upload Options", expanded = True)
 use_demo = file_opts.checkbox("Use demo dataset", value=st.session_state['demo'], on_change=ss.binaryswitch, args = ('demo',))

@@ -37,6 +37,7 @@ ss.initialise_state({'prerank_selected_df_idx':0,
                      'prerank_res_sig':None}
                      )
 
+st.header("GSEA Preranked Analysis")
 prnk_opts = st.sidebar.expander("GSEA Preranked Analysis Options", expanded=True)
 
 add_geneset_in = prnk_opts.file_uploader("Upload a gene set here (optional)", type="gmt", accept_multiple_files=True, help="Reupload not required if gene set has already been uploaded once")

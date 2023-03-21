@@ -34,6 +34,7 @@ ss.initialise_state({'cluster_useDEG': None,
                      'clust_submit':True
                      })
 
+st.header("Clustergram")
 clust_opts = st.sidebar.expander("Clustergram options", expanded=True)
 degs = st.session_state['degs']
 if degs is not None: # If there were DEGs already

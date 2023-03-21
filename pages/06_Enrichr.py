@@ -37,6 +37,7 @@ ss.initialise_state({'add_geneset_in':None,
                       }
                       )
 
+st.header("Enrichr")
 enr_opts = st.sidebar.expander("Enrichr Options", expanded=True)
 add_geneset_in = enr_opts.file_uploader("Upload a gene set here (optional)", type="gmt", accept_multiple_files=True, help="Reupload not required if gene set has already been uploaded once")
 ss.save_state({'add_geneset_in':add_geneset_in})

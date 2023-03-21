@@ -7,6 +7,7 @@ st.session_state.update(st.session_state)
 
 ss.initialise_state({'corr_mtd': "pearson"})
 
+st.header("Correlation Matrix")
 corr_exp = st.sidebar.expander("Expand for correlation matrix", expanded=False)
 corr_opts = ['pearson', 'kendall', 'spearman', 'phik']
 
@@ -16,7 +17,6 @@ if st.session_state['log_dict_ready'] is not None:
     corr_mtd = corr_exp.selectbox("Choose the correlation coefficient to use", options=corr_opts, format_func = lambda x: x.title(), index = corr_opts.index(st.session_state['corr_mtd']))
     ss.save_state({'corr_mtd':corr_mtd})
 
-    st.header("Correlation Matrix")
     mtx = cmatrix.corr_matrix(log_dict, method = st.session_state['corr_mtd'])
     ss.save_state({'corr_matrix_plot':mtx})
     st.info("If the plot is too small, please hover over the plot and click the expand button on the top right corner of the plot.")
