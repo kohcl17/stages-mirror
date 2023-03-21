@@ -177,11 +177,11 @@ elif exprdict is not None and metadatadict is not None: # RNAseq or microarray d
         comp_var = prep_exp.selectbox(label="Select variable to use for comparison", options = adata_vars, index= st.session_state['comp_var'])
         comparison_options = adata.obs[comp_var].unique()
         ss.save_state({'comp_var': adata_vars.index(comp_var), 'comparison_options':comparison_options})
-        baseline = prep_exp.multiselect(label=f"Select the groups within {adata_vars[st.session_state['comp_var']]} as the baseline for comparison ie. choose A where B vs A", options = st.session_state['comparison_options'], default = st.session_state['baseline'])
+        baseline = prep_exp.multiselect(label=f"Select the groups within **{adata_vars[st.session_state['comp_var']]}** as the baseline for comparison ie. choose A where B vs A", options = st.session_state['comparison_options'], default = st.session_state['baseline'])
         ss.save_state({'baseline':baseline})
         comparisonopts_nobaseline = [i for i in comparison_options if i not in st.session_state['baseline']]
         ss.save_state({'comparisonopts_nobaseline':comparisonopts_nobaseline})
-        against_baseline = prep_exp.multiselect(label=f"Select the groups within {adata_vars[st.session_state['comp_var']]} to compare against baseline ie choose B where B vs A", options = st.session_state['comparisonopts_nobaseline'], default = st.session_state['against_baseline'])
+        against_baseline = prep_exp.multiselect(label=f"Select the groups within **{adata_vars[st.session_state['comp_var']]}** to compare against baseline ie choose B where B vs A", options = st.session_state['comparisonopts_nobaseline'], default = st.session_state['against_baseline'])
         ss.save_state({'against_baseline':against_baseline})
         equalvar = prep_exp.checkbox(label="Assume equal variance for comparisons", value = st.session_state['equalvar'], on_change=ss.binaryswitch, args = ('equalvar', ))
         test_fdr = prep_exp.selectbox("Select multiple test correction method", options = list(padj_mtds.keys()), index = list(padj_mtds.keys()).index(st.session_state['test_fdr']))

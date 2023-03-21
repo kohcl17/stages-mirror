@@ -7,6 +7,7 @@ import streamlit as st
 
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 import textwrap
 
 from helper_functions.session_state import ss
@@ -43,8 +44,11 @@ class GeneHandler():
         return compiled_logFC
 
 class Clustergram():
-    def cluster_plot(self,
+
+    @st.cache_data
+    def cluster_plot(_self,
                      compiled_logFC,
+                     gene_dict,
                      vminmax = (-2.0, 2.0),
                      cbar_left = 0.96,
                      cbar_bottom = 0.02,
@@ -59,6 +63,8 @@ class Clustergram():
         wrap_colnames = ["\n".join(textwrap.wrap(a, width=30, break_long_words=False)) for a in colnames_whitespaced]
         reformatted_logFC = compiled_logFC
         reformatted_logFC.columns = wrap_colnames
+
+        dendrogram_c = 0.0 if not cluster_cols else dendrogram_c
         g = sns.clustermap(reformatted_logFC,
                             cmap="vlag",
                             method='average',
@@ -74,10 +80,11 @@ class Clustergram():
                             linewidths=1, linecolor='white',
                             cbar_kws = {"label": "log2FC", 'orientation':'horizontal', 'ticks':[vminmax[0], 0, vminmax[1]]})
 
-
+        optimal_title_y = 1.00 + (height * 0.004) if dendrogram_c != 0.0 else 1.00
         g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_ymajorticklabels(), fontsize=11, rotation=0)
         g.ax_heatmap.set_ylabel("")
-        g.fig.suptitle("Clustergram from DEGs", x=0.5, y=1.02, fontsize=14, fontweight='bold')
+        titles = '\n'.join([i for i in gene_dict.keys()])
+        g.fig.suptitle(f"Clustergram from \n {titles}", x=0.5, y=optimal_title_y, fontsize=14, fontweight='bold')
         for _, spine in g.ax_heatmap.spines.items():
             spine.set_visible(True)
             spine.set_edgecolor("black")

@@ -28,6 +28,9 @@ ss.initialise_state({'cluster_useDEG': None,
                      'clust_cbarbottom':0.05,
                      'clust_cbarwidth':0.15,
                      'clust_cbarheight':0.02,
+                     'clust_genelist':None,
+                     'clust_genedict':None,
+                     'clust_genevals':None,
                      'clust_submit':True
                      })
 
@@ -86,22 +89,26 @@ if plot_clust:
                    'clust_cbarwidth':cbar_width,
                    'clust_cbarheight':cbar_height
                    })
-    get_genes, _ = genePP.genes_used(degs=degs, useDEG=st.session_state['cluster_useDEG'], textgene=st.session_state['cluster_textgene'])
+    get_genes, gene_dict = genePP.genes_used(degs=degs, useDEG=st.session_state['cluster_useDEG'], textgene=st.session_state['cluster_textgene'])
     gene_vals = genePP.get_gene_vals(st.session_state['log_dict_ready'], get_genes)
+    ss.save_state({'clust_genelist':get_genes,
+                   'clust_genedict':gene_dict,
+                   'clust_genevals':gene_vals})
     
     try:
-        get_clustergram = clustergram.cluster_plot(gene_vals,
-                                                vminmax=st.session_state['clust_vminmax'],
-                                                cbar_left=st.session_state['clust_cbarleft'],
-                                                cbar_bottom=st.session_state['clust_cbarbottom'],
-                                                cbar_width=st.session_state['clust_cbarwidth'],
-                                                cbar_height=st.session_state['clust_cbarheight'],
-                                                width=st.session_state['clust_width'],
-                                                height=st.session_state['clust_height'],
-                                                dendrogram_r=st.session_state['clust_dendror'],
-                                                dendrogram_c=st.session_state['clust_dendroc'],
-                                                cluster_cols=st.session_state['clust_cols']
-        )
+        get_clustergram = clustergram.cluster_plot(st.session_state['clust_genevals'],
+                                                   gene_dict=st.session_state['clust_genedict'],
+                                                   vminmax=st.session_state['clust_vminmax'],
+                                                   cbar_left=st.session_state['clust_cbarleft'],
+                                                   cbar_bottom=st.session_state['clust_cbarbottom'],
+                                                   cbar_width=st.session_state['clust_cbarwidth'],
+                                                   cbar_height=st.session_state['clust_cbarheight'],
+                                                   width=st.session_state['clust_width'],
+                                                   height=st.session_state['clust_height'],
+                                                   dendrogram_r=st.session_state['clust_dendror'],
+                                                   dendrogram_c=st.session_state['clust_dendroc'],
+                                                   cluster_cols=st.session_state['clust_cols']
+                                                   )
         st.pyplot(get_clustergram)
     
     except ValueError:

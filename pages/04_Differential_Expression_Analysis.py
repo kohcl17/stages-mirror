@@ -86,8 +86,7 @@ cdf_pthresh = cdf_exp.number_input("Choose p-value threshold for differentially 
                                    min_value = 0.00,
                                    max_value = 1.00,
                                    step = 0.01,
-                                   value = st.session_state['cdf_pthresh'],
-                                   key='cdf_pthresh2')
+                                   value = st.session_state['cdf_pthresh'])
 cdf_linemode = cdf_exp.selectbox("Choose line mode", options=line_options,
                                  format_func=lambda x: x.title().replace("+", " & "),
                                  index = line_options.index(st.session_state['cdf_linemode']))
@@ -102,9 +101,9 @@ cdf_t.plotly_chart(cdf_plot, theme=None, use_container_width=True)
 ######### BAR PLOT #################
 deg_opts = st.sidebar.expander("Differential expression options", expanded=True)
 bar_pval = deg_opts.number_input("Choose p-value threshold for differentially expressed genes", min_value = 0.00, max_value = 1.00, step = 0.01, value = st.session_state['bar_pval'], key='bar_pval2')
-bar_fc = deg_opts.slider(label="Adjust fold-change cutoff here ", value=st.session_state['bar_fc'], min_value=0.0, max_value=20.0, step=0.1)
-bar_width = deg_opts.slider(label="Adjust bar plot width (in px)", min_value=300, max_value=1200, value=st.session_state['bar_width'], step=50)
-bar_height = deg_opts.slider(label="Adjust bar plot height (in px)", min_value=300, max_value=1200, value=st.session_state['bar_height'], step=50)
+bar_fc = deg_opts.number_input(label="Adjust fold-change cutoff here ", value=st.session_state['bar_fc'], min_value=0.0, max_value=20.0, step=0.1)
+bar_width = deg_opts.number_input(label="Adjust bar plot width (in px)", min_value=300, max_value=1200, value=st.session_state['bar_width'], step=50)
+bar_height = deg_opts.number_input(label="Adjust bar plot height (in px)", min_value=300, max_value=1200, value=st.session_state['bar_height'], step=50)
 
 ss.save_state({'bar_pval':bar_pval,
                'bar_fc':bar_fc,

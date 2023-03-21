@@ -6,6 +6,7 @@ import re
 import base64
 from PIL import Image
 from io import BytesIO
+import zipfile
 
 import streamlit as st
 from streamlit_tags import st_tags, st_tags_sidebar
@@ -52,13 +53,33 @@ class DLs():
     #               file_name="cleanedfiles.zip",
     #               mime="application/octet-stream"
     #               )
+    def zip_imgs(self, imgsave_dict, zipfilename = "STRING_network.zip"):
+        '''
+        Parameters
+        ----------
+        imgsave_dict: dict | keys containing filename (without extension), values containing response.content from STRING
+        zipfilename: str | name for the zip file
+        '''
+        with zipfile.ZipFile(zipfilename, 'w') as compress: # First create a zip file
+            for k,v in imgsave_dict.items():
+                buf = BytesIO(v) # Get the bytes from this PNG file
+                compress.writestr(f"{k}.png", buf.getvalue()) # Add the bytes object.getvalue() to the zip
+        
+        with open(zipfilename, "rb") as fp: # Open to allow download
+              btn = st.download_button(
+                  label="Download STRING Network as ZIP",
+                  data=fp,
+                  file_name=zipfilename,
+                  mime="application/zip"
+                  )
+
 
     def create_pdf(self, fig, fn, graph_module = "pyplot"):
         buf = BytesIO()
         if graph_module == 'pyplot':
             fig.savefig(buf, format = 'pdf', bbox_inches = 'tight')
         elif graph_module == 'plotly':
-            fig.write_image(file = buf, format = 'pdf')
+            fig.write_image(file = buf, format = 'pdf', engine='kaleido')
         st.download_button(
             label = f"Download {fn.replace('_', ' ')} as pdf",
             data = buf,

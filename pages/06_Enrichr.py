@@ -16,7 +16,7 @@ ss.initialise_state({'add_geneset_in':None,
                      'add_geneset':None,
                      'geneset_dict': {"Blood Transcriptomic Modules (BTM)": "accessory_files/BTM.gmt",
                                       "Reactome 2021": "accessory_files/Reactome.gmt",
-                                      "Vaccinomics (In-house)": "accessory_files/Vaccinomics.gmt", 
+                                      "Vaccinomics (In-house)": "accessory_files/Vaccinomics.gmt",
                                       "GO Biological Process 2021": "GO_Biological_Process_2021",
                                       "GO Molecular Function 2021": "GO_Molecular_Function_2021",
                                       "GO Cellular Component 2021": "GO_Cellular_Component_2021",
@@ -38,18 +38,15 @@ ss.initialise_state({'add_geneset_in':None,
                       )
 
 enr_opts = st.sidebar.expander("Enrichr Options", expanded=True)
-add_geneset_in = enr_opts.file_uploader("Upload a gene set here (optional)", type="gmt", accept_multiple_files=True)
+add_geneset_in = enr_opts.file_uploader("Upload a gene set here (optional)", type="gmt", accept_multiple_files=True, help="Reupload not required if gene set has already been uploaded once")
+ss.save_state({'add_geneset_in':add_geneset_in})
 
 enr_plots_t, enr_data_t = st.tabs(["Bar plots", "Data"])
 
-if len(add_geneset_in) != 0:
-    ss.save_state({'add_geneset_in': add_geneset_in})
-else:
-    ss.save_state({'add_geneset_in': st.session_state['add_geneset_in']})
-
 if st.session_state['add_geneset_in'] is not None:
     add_geneset = fileuploads.gmt_to_dict(st.session_state['add_geneset_in'])
-    ss.save_state({'add_geneset':add_geneset, 'geneset_dict':st.session_state['geneset_dict']|st.session_state['add_geneset']}) # | merges both dictionaries for python 3.10 only
+    ss.save_state({'add_geneset':add_geneset})
+    ss.save_state({'geneset_dict':st.session_state['geneset_dict']|st.session_state['add_geneset']}) # | merges both dictionaries for python 3.10 only
 
 # Selecting genesets (BTM or reactome) to plot from a list
 geneset_opts = list(st.session_state['geneset_dict'].keys())
@@ -78,7 +75,7 @@ else:
     enr_textgene = enr_opts.text_area("Enter custom list of genes here",
                                             value = st.session_state['enr_textgene'],
                                             placeholder="Enter genes with one of the following delimiters: line breaks, commas, or semicolons")
-    enr_textgene = ss.save_state({'enr_textgene':enr_textgene})
+    ss.save_state({'enr_textgene':enr_textgene})
 
 
 enr_pthresh = enr_opts.number_input("Choose adjusted p-value threshold of enriched pathways to plot", min_value = 0.00, max_value=1.00, step=0.01, value = st.session_state['enr_pthresh'])
@@ -89,7 +86,7 @@ enr_ht = enr_opts.number_input("Bar plot height (in px)", min_value=200, max_val
 ss.save_state({'enr_pthresh': round(enr_pthresh,2),
                'enr_showX':enr_showX,
                'enr_ht':enr_ht})
-plot_enr = enr_opts.checkbox("Plot enrichr plot", value = st.session_state['plot_enr'], on_change=ss.binaryswitch, args=("plot_enr", ))
+plot_enr = enr_opts.checkbox("Run Enrichr", value = st.session_state['plot_enr'], on_change=ss.binaryswitch, args=("plot_enr", ))
 
 if plot_enr:
     _, gene_dict = genePP.genes_used(degs=degs, useDEG=st.session_state['enr_useDEG'], textgene=st.session_state['enr_textgene'])
@@ -109,7 +106,11 @@ if plot_enr:
         with enr_plots_t:
             st.plotly_chart(enr_plots, theme=None, use_container_width=False)
             file_downloads.create_pdf(enr_plots, fn="Enrichr plots", graph_module="plotly")
-        for k,v in res_all.items():
-            enr_data_t.write(f"**{k}**")
-            enr_data_t.dataframe(v)
-        enr_data_t.download_button(label="Download Enrichr Pathways", data=file_downloads.to_excel(st.session_state['enr_res_all'].values()), file_name="Enrichr_results.xlsx")
+        
+        with enr_data_t:
+            for k,v in res_all.items():
+                st.write(f"**{k}**")
+                st.dataframe(v)
+            st.download_button(label="Download Enrichr Results",
+                               data=file_downloads.to_excel(st.session_state['enr_res_all'].values(), sheetnames=st.session_state['enr_res_all'].keys()),
+                               file_name="Enrichr_results.xlsx")
