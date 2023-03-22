@@ -14,7 +14,7 @@ import streamlit as st
 
 ss.initialise_state({'add_geneset_in':None,
                      'add_geneset':None,
-                     'geneset_dict': {"Blood Transcriptomic Modules (BTM)": "BTM.gmt",
+                     'geneset_dict': {"Blood Transcriptomic Modules (BTM)": "accessory_files/BTM.gmt",
                                       "Reactome 2021": "Reactome.gmt",
                                       "Vaccinomics (In-house)": "Vaccinomics.gmt",
                                       "GO Biological Process 2021": "GO_Biological_Process_2021",
