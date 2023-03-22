@@ -25,7 +25,7 @@ class DLs():
         else:
             for d, i in zip(df, range(len(df))):
                 d.to_excel(writer, sheet_name=f'Sheet {i + 1}')
-        writer.save()
+        writer.close()
         processed_data = output.getvalue()
         return processed_data
 

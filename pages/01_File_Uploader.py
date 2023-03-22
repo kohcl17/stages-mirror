@@ -58,7 +58,7 @@ if st.session_state['df_in'] is not None and st.session_state['demo'] is False:
         cleandict = fileuploads.read_xfile(st.session_state['df_in'], ss_excel = 'df_excel')
     cleandict = fileuploads.capslock_genes(cleandict)
 
-    if file_type == "Fold-Changes and P-values":
+    if file_type == "Ratios and P-values":
         ss.save_state({'anova_dict':cleandict})
 
     else:
@@ -92,7 +92,7 @@ if view_df is True:
     exprdict, metadatadict, anovadict = st.session_state['expr_dict'], st.session_state['meta_dict'], st.session_state['anova_dict']
     _ = {main_expr.subheader(k):main_expr.dataframe(v) for k,v in exprdict.items()} if exprdict is not None else main_expr.info("No gene expression counts uploaded")
     _ = {meta_expr.subheader(k):meta_expr.dataframe(v) for k,v in metadatadict.items()} if metadatadict is not None else meta_expr.info("No metadata uploaded")
-    _ = {anova_expr.subheader(k):anova_expr.dataframe(v) for k,v in anovadict.items()} if anovadict is not None else anova_expr.info("No fold-changes and p-values uploaded")
+    _ = {anova_expr.subheader(k):anova_expr.dataframe(v) for k,v in anovadict.items()} if anovadict is not None else anova_expr.info("No ratios and p-values uploaded")
 
 ################################### DEBUGGING STAGE #############################################
 # ss.initialise_state(dict(viewdf = False, use_demo = False, cleandict = None))
