@@ -14,9 +14,9 @@ import streamlit as st
 
 ss.initialise_state({'add_geneset_in':None,
                      'add_geneset':None,
-                     'geneset_dict': {"Blood Transcriptomic Modules (BTM)": "../accessory_files/BTM.gmt",
-                                      "Reactome 2021": "../accessory_files/Reactome.gmt",
-                                      "Vaccinomics (In-house)": "../accessory_files/Vaccinomics.gmt",
+                     'geneset_dict': {"Blood Transcriptomic Modules (BTM)": "accessory_files/BTM.gmt",
+                                      "Reactome 2021": "accessory_files/Reactome.gmt",
+                                      "Vaccinomics (In-house)": "accessory_files/Vaccinomics.gmt",
                                       "GO Biological Process 2021": "GO_Biological_Process_2021",
                                       "GO Molecular Function 2021": "GO_Molecular_Function_2021",
                                       "GO Cellular Component 2021": "GO_Cellular_Component_2021",
