@@ -34,7 +34,8 @@ ss.initialise_state({'prerank_selected_df_idx':0,
                      'add_geneset':None,
                      'geneset_prerank':'Blood Transcriptomic Modules (BTM)',
                      'prerank_res_all':None,
-                     'prerank_res_sig':None}
+                     'prerank_res_sig':None,
+                     'prerank_plots':None}
                      )
 
 st.header("GSEA Preranked Analysis")
@@ -96,6 +97,7 @@ try:
                                         prerank_pthresh=st.session_state['prerank_pthresh'],
                                         prerank_showX=st.session_state['prerank_showX'],
                                         prerank_ht=st.session_state['prerank_ht'])
+        ss.save_state({'prerank_plots':sig_plots})
         prnk_plots_t.plotly_chart(sig_plots, theme=None, use_container_width=False)
         with prnk_data_t:
             for k,v in sig_res.items():

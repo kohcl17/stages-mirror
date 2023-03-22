@@ -33,7 +33,8 @@ ss.initialise_state({'add_geneset_in':None,
                       'enr_genedict':None,
                       'enr_ht':500,
                       'enr_res_all':None,
-                      'enr_res_sig':None
+                      'enr_res_sig':None,
+                      'enrichr_plots':None
                       }
                       )
 
@@ -104,6 +105,7 @@ if plot_enr:
                                     enr_pthresh=st.session_state['enr_pthresh'],
                                     enr_showX=st.session_state['enr_showX'],
                                     enr_ht=st.session_state['enr_ht'])
+        ss.save_state({'enrichr_plots':enr_plots})
         with enr_plots_t:
             st.plotly_chart(enr_plots, theme=None, use_container_width=False)
             file_downloads.create_pdf(enr_plots, fn="Enrichr plots", graph_module="plotly")

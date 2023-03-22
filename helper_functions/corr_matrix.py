@@ -38,7 +38,7 @@ class Correlation():
                                 labels = {"color":f"{method} {corr_symbols[method]}"})
         
         corr_matrix.update_layout(
-            title_text="Comparison corrlation matrix (based on log2FC values)",
+            title_text="Comparison correlation matrix (based on log2FC values)",
             title_x=0.5,
             coloraxis_colorbar_x=0.8,
             xaxis_showgrid=False,

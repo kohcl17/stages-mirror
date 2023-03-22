@@ -5,7 +5,8 @@ from helper_functions.preprocessing import tested
 
 st.session_state.update(st.session_state)
 
-ss.initialise_state({'corr_mtd': "pearson"})
+ss.initialise_state({'corr_mtd': "pearson",
+                     'corr_matrix_plot':None})
 
 st.header("Correlation Matrix")
 corr_exp = st.sidebar.expander("Expand for correlation matrix", expanded=False)

@@ -26,12 +26,15 @@ ss.initialise_state({'reset_volcano':False,
                      'xaxes_volcano':(0.0,0.0),
                      'yaxes_volcano':0.0,
                      'interactive_volcano':False,
+                     'volcano_plots':None,
                      'cdf_pthresh':0.05,
                      'cdf_linemode':'lines',
+                     'cdf_plot':None,
                      'bar_pval':0.05,
                      'bar_fc':1.30,
                      'bar_width':800,
                      'bar_height':600,
+                     'barplot':None,
                      'degs':None})
 
 st.header("Differential Expression Analysis")
@@ -101,6 +104,7 @@ try:
                             markermode=st.session_state['cdf_linemode'],
                             use_corrected_pval=st.session_state['use_corrected_pval'])
     cdf_t.plotly_chart(cdf_plot, theme=None, use_container_width=True)
+    ss.save_state({'cdf_plot':cdf_plot})
 
     ######### BAR PLOT #################
     deg_opts = st.sidebar.expander("Differential expression options", expanded=True)
@@ -122,7 +126,8 @@ try:
                                             u_height=st.session_state['bar_height'],
                                             use_corrected_pval=st.session_state['use_corrected_pval'])
 
-    ss.save_state({'degs':proportions})
+    ss.save_state({'degs':proportions,
+                   'barplot':stacked1})
 
     with bar_t:
         st.plotly_chart(stacked1, theme=None, use_container_width=False)

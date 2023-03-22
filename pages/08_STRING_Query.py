@@ -13,7 +13,8 @@ import streamlit as st
 
 ss.initialise_state({'string_useDEG':None,
                      'string_textgene':'COL1A2;DCN;IL6;IL8;LIF;MGP;MMP1;MMP2;MMP9',
-                     'plot_string':True})
+                     'plot_string':True,
+                     'string_plots':None})
 
 st.header("STRING Network Query")
 str_netplots, str_other = st.tabs(['STRING Network Plots', "Data"])
@@ -49,6 +50,7 @@ if plot_string:
 
     if len(gene_dict) != 0:
         str_network, tozip = stages_str.string_query(gene_dict)
+        ss.save_state({'string_plots':tozip})
         with str_netplots:
             for k, v in str_network.items():
                 st.write(f"**{k}**")

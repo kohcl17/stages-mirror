@@ -87,4 +87,14 @@ class DLs():
             mime='application/pdf'
         )
 
+    def plot_to_bytes(self, fig, graph_module="pyplot", format="png"):
+        buf = BytesIO()
+        if graph_module == "pyplot":
+            fig.savefig(buf, format = format, bbox_inches="tight", dpi=300)
+        elif graph_module == 'plotly':
+            fig.write_image(file = buf, format = format, scale=3)
+        
+        data = base64.b64encode(buf.getbuffer()).decode("ascii")
+        return data
+
 file_downloads = DLs()

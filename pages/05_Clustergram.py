@@ -31,7 +31,8 @@ ss.initialise_state({'cluster_useDEG': None,
                      'clust_genelist':None,
                      'clust_genedict':None,
                      'clust_genevals':None,
-                     'clust_submit':True
+                     'clust_submit':True,
+                     'clustergram_plot':None
                      })
 
 st.header("Clustergram")
@@ -113,6 +114,7 @@ try:
                                                     cluster_cols=st.session_state['clust_cols']
                                                     )
             st.pyplot(get_clustergram)
+            ss.save_state({'clustergram_plot':get_clustergram})
         
         except ValueError:
             st.error("At least 2 genes must be entered!")
