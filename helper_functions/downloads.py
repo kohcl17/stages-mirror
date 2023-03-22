@@ -21,7 +21,7 @@ class DLs():
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         if sheetnames is not None:
             for d, i in zip(df, sheetnames):
-                d.to_excel(writer, sheet_name = i)
+                d.to_excel(writer, sheet_name = i[:30])
         else:
             for d, i in zip(df, range(len(df))):
                 d.to_excel(writer, sheet_name=f'Sheet {i + 1}')

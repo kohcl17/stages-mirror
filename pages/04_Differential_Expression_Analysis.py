@@ -40,6 +40,8 @@ try:
     ######### VOLCANO PLOT ##################
     volcano_t, cdf_t, bar_t, data_t = st.tabs(["Volcano Plot", "Cumulative Distribution Function", "Bar Plots", "Data"])
     vol_opts = st.sidebar.expander("Volcano plot options", expanded=True)
+    use_corrected_pval_fmt = "adjusted p-value" if st.session_state['use_corrected_pval'] else "p-value"
+
     reset = vol_opts.checkbox("Reset to default settings", value=st.session_state['reset_volcano'], on_change=ss.binaryswitch, args=('reset_volcano', ))
     if reset:
         ss.save_state({'xaxes_volcano':(0.0, 0.0), 'yaxes_volcano': 0.0})
@@ -49,7 +51,7 @@ try:
                                 min_value=-10.0, max_value=10.0, step=0.1, value= st.session_state['xaxes_volcano'])
     ss.save_state({'xaxes_volcano':xaxes})
 
-    yaxes = vol_opts.slider("Choose negative log10 p-value boundaries for volcano plot",
+    yaxes = vol_opts.slider(f"Choose -log10 {use_corrected_pval_fmt} boundaries for volcano plot",
                                 help="The app will plot the values less than or equal to the user-set value",
                                 min_value=0.0, max_value=50.0, step=0.1, value=st.session_state['yaxes_volcano'])
     ss.save_state({'yaxes_volcano':yaxes})
@@ -83,11 +85,12 @@ try:
     ########## CDF PLOT ###############
     line_options = ["lines", "markers", "lines+markers"]
     cdf_exp = st.sidebar.expander("Cumulative distribution function options", expanded=True)
-    cdf_pthresh = cdf_exp.number_input("Choose p-value threshold for differentially expressed genes",
+    cdf_pthresh = cdf_exp.number_input(f"Choose {use_corrected_pval_fmt} threshold for differentially expressed genes",
                                     min_value = 0.00,
                                     max_value = 1.00,
                                     step = 0.01,
-                                    value = st.session_state['cdf_pthresh'])
+                                    value = st.session_state['cdf_pthresh'],
+                                    key="cdf_pthresh2")
     cdf_linemode = cdf_exp.selectbox("Choose line mode", options=line_options,
                                     format_func=lambda x: x.title().replace("+", " & "),
                                     index = line_options.index(st.session_state['cdf_linemode']))
@@ -101,7 +104,7 @@ try:
 
     ######### BAR PLOT #################
     deg_opts = st.sidebar.expander("Differential expression options", expanded=True)
-    bar_pval = deg_opts.number_input("Choose p-value threshold for differentially expressed genes", min_value = 0.00, max_value = 1.00, step = 0.01, value = st.session_state['bar_pval'], key='bar_pval2')
+    bar_pval = deg_opts.number_input(f"Choose {use_corrected_pval_fmt} threshold for differentially expressed genes", min_value = 0.00, max_value = 1.00, step = 0.01, value = st.session_state['bar_pval'])
     bar_fc = deg_opts.number_input(label="Adjust fold-change cutoff here ", value=st.session_state['bar_fc'], min_value=0.0, max_value=20.0, step=0.1)
     bar_width = deg_opts.number_input(label="Adjust bar plot width (in px)", min_value=300, max_value=1200, value=st.session_state['bar_width'], step=50)
     bar_height = deg_opts.number_input(label="Adjust bar plot height (in px)", min_value=300, max_value=1200, value=st.session_state['bar_height'], step=50)
