@@ -80,7 +80,7 @@ class Clustergram():
                             linewidths=1, linecolor='white',
                             cbar_kws = {"label": "log2FC", 'orientation':'horizontal', 'ticks':[vminmax[0], 0, vminmax[1]]})
 
-        optimal_title_y = 1.00 + (height * 0.004) if dendrogram_c != 0.0 else 1.00
+        optimal_title_y = 1.00 + (height * 0.004) if dendrogram_c != 0.0 else 1.02
         g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_ymajorticklabels(), fontsize=11, rotation=0)
         g.ax_heatmap.set_ylabel("")
         titles = '\n'.join([i for i in gene_dict.keys()])
