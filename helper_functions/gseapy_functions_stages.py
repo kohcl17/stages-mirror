@@ -14,7 +14,7 @@ class Enrichr_STAGES():
     Class to run enrichr functions for STAGES
     '''
 
-    @st.cache_data
+    # @st.cache_data
     def execute_enrichr(_self, gene_dict, select_dataset, enr_pthresh=0.05, enr_showX=10):
         '''
         Parameters
