@@ -26,15 +26,21 @@ all_plots_bytes = {}
 
 for key in ['corr_matrix_plot','cdf_plot', 'barplot', 'enrichr_plots', 'prerank_plots']:
     if key in st.session_state:
-        to_bytes = file_downloads.plot_to_bytes(st.session_state[key], graph_module='plotly', format='png')
-        all_plots_bytes[key] = to_bytes
+        if st.session_state[key] is not None:
+            to_bytes = file_downloads.plot_to_bytes(st.session_state[key], graph_module='plotly', format='png')
+            all_plots_bytes[key] = to_bytes
+        else:
+            all_plots_bytes[key] = None
     else:
         all_plots_bytes[key] = None
 
 for key in ['volcano_plots_static', 'clustergram_plot']:
     if key in st.session_state:
-        to_bytes = file_downloads.plot_to_bytes(st.session_state[key], graph_module='pyplot', format='png')
-        all_plots_bytes = to_bytes
+        if st.session_state[key] is not None:
+            to_bytes = file_downloads.plot_to_bytes(st.session_state[key], graph_module='pyplot', format='png')
+            all_plots_bytes = to_bytes
+        else:
+            all_plots_bytes[key] = None
     else:
         all_plots_bytes[key] = None
 
