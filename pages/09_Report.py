@@ -13,6 +13,9 @@ from datetime import datetime
 
 from helper_functions.downloads import file_downloads
 
+# On deployment?
+config = pdfkit.configuration(wkhtmltopdf="/home/appuser/venv/lib/python3.10/site-packages/wkhtmltopdf-pack-ng/")
+
 st.header("Report Generation")
 # Get time
 today = datetime.now()
@@ -115,5 +118,5 @@ HTML_inapp = open("STAGES_report.html", 'r', encoding='utf-8')
 source_code = HTML_inapp.read()
 components.html(source_code, height = 900, scrolling=True)
 
-pdf_out = pdfkit.from_string(outputText, False)
+pdf_out = pdfkit.from_string(outputText, False, configuration=config)
 st.download_button("Download STAGES report as PDF here", data=pdf_out, file_name="STAGES_report.pdf", mime='application/octet-stream')
