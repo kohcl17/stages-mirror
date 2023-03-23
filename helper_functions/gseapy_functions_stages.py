@@ -15,11 +15,14 @@ class Enrichr_STAGES():
     Class to run enrichr functions for STAGES
     '''
 
-    def background_enrichr(_self):
-        bm = Biomart()
-        query = bm.query(dataset='hsapiens_gene_ensembl', #  e.g. 'hsapiens_gene_ensembl'
-                         attributes=['ensembl_gene_id', 'external_gene_name', 'entrezgene_id'],
-                         filename=None)
+    def background_enrichr(_self, filename):
+        # bm = Biomart()
+        # query = bm.query(dataset='hsapiens_gene_ensembl', #  e.g. 'hsapiens_gene_ensembl'
+        #                  attributes=['ensembl_gene_id', 'external_gene_name', 'entrezgene_id'],
+        #                  filename="accessory_files/hsapiens_gene_ensembl.txt")
+        # query = query.dropna(subset=["entrezgene_id"], inplace=True)
+
+        query = pd.read_csv(filename, sep="\t",index_col=0)
         query = query.dropna(subset=["entrezgene_id"], inplace=True)
         return query
     
@@ -42,7 +45,7 @@ class Enrichr_STAGES():
                 outdir=None,
                 no_plot=True,
                 cutoff=0.5,
-                background=_self.background_enrichr()
+                background=_self.background_enrichr(filename="accessory_files/hsapiens_gene_ensembl.txt")
             )
 
             # Sort values by adjusted p-value
