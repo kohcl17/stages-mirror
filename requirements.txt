@@ -21,3 +21,4 @@ decoupler
 anndata
 scanpy
 pdfkit
+wkhtmltopdf-pack-ng
