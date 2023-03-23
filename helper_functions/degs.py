@@ -30,7 +30,8 @@ class PreDEGs():
             colors = plotly_clrs[0:n_comps]
         return colors
 
-    def volcano(self,
+    @st.cache_data
+    def volcano(_self,
     user_log, comparison_dict,
     reset=False, xaxes = (0.0, 0.0), yaxes = 0.0,
     interactive_volcano = False,
@@ -40,7 +41,7 @@ class PreDEGs():
         top10annotation, bottom10annotation = [], []
         
         unlist_comparisons = sorted(list(set([item for sublist in comparison_dict.values() for item in sublist])), reverse=True)
-        colorlist = self.nclrs(comparison_dict = comparison_dict)
+        colorlist = _self.nclrs(comparison_dict = comparison_dict)
         legend_dict = {}
         for a, c in zip(unlist_comparisons, colorlist):
             legend_dict[a.replace("_"," ").replace("-", " ")] = c
@@ -288,7 +289,8 @@ class PreDEGs():
                                 )
         return fig, volcano1
     
-    def deg_cdf(self, ready_dict, comparison_dict, pval=0.05, markermode='lines', use_corrected_pval=False):
+    @st.cache_data
+    def deg_cdf(_self, ready_dict, comparison_dict, pval=0.05, markermode='lines', use_corrected_pval=False):
         FC_step = [i/10 for i in range(0, 31, 1)]
         fig = go.Figure()
         for k,v in ready_dict.items():
@@ -327,6 +329,8 @@ class DEGs():
     '''
     This class will provide the output for bar plots and data containing DEGs.
     '''
+
+    @st.cache_data
     def degs(self, log_ready_dict, comparison_dict, pval_cutoff=0.0, fc_cutoff=0.0, u_width = 800, u_height=600, use_corrected_pval=False):
         log2fc_cutoff = np.log2(fc_cutoff)
         p_format = "adjusted p-value" if use_corrected_pval else "p-value"
