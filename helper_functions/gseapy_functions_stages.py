@@ -32,7 +32,8 @@ class Enrichr_STAGES():
                 gene_sets=select_dataset,
                 outdir=None,
                 no_plot=True,
-                cutoff=0.5
+                cutoff=0.5,
+                background='hsapiens_gene_ensembl'
             )
 
             # Sort values by adjusted p-value
