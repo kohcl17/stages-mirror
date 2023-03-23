@@ -80,11 +80,10 @@ class Clustergram():
                             linewidths=1, linecolor='white',
                             cbar_kws = {"label": "log2FC", 'orientation':'horizontal', 'ticks':[vminmax[0], 0, vminmax[1]]})
 
-        optimal_title_y = 1.00 + (height * 0.004) if dendrogram_c != 0.0 else 1.02
         g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_ymajorticklabels(), fontsize=11, rotation=0)
         g.ax_heatmap.set_ylabel("")
         titles = '\n'.join([i for i in gene_dict.keys()])
-        g.fig.suptitle(f"Clustergram from \n {titles}", x=0.5, y=optimal_title_y, fontsize=14, fontweight='bold')
+        g.fig.suptitle(f"Clustergram from \n {titles}", x=0.5, y=1.04, fontsize=14, fontweight='bold')
         for _, spine in g.ax_heatmap.spines.items():
             spine.set_visible(True)
             spine.set_edgecolor("black")
