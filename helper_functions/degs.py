@@ -331,7 +331,7 @@ class DEGs():
     '''
 
     @st.cache_data
-    def degs(self, log_ready_dict, comparison_dict, pval_cutoff=0.0, fc_cutoff=0.0, u_width = 800, u_height=600, use_corrected_pval=False):
+    def degs(_self, log_ready_dict, comparison_dict, pval_cutoff=0.0, fc_cutoff=0.0, u_width = 800, u_height=600, use_corrected_pval=False):
         log2fc_cutoff = np.log2(fc_cutoff)
         p_format = "adjusted p-value" if use_corrected_pval else "p-value"
         ####################################### Filter DF by Pvals and FC #################################################
