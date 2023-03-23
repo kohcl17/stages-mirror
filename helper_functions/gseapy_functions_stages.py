@@ -10,20 +10,28 @@ from gseapy.biomart import Biomart
 
 import streamlit as st
 
+from datetime import datetime, timedelta
+import pytz
+
 class Enrichr_STAGES():
     '''
     Class to run enrichr functions for STAGES
     '''
 
     def background_enrichr(_self, filename):
-        # bm = Biomart()
-        # query = bm.query(dataset='hsapiens_gene_ensembl', #  e.g. 'hsapiens_gene_ensembl'
-        #                  attributes=['ensembl_gene_id', 'external_gene_name', 'entrezgene_id'],
-        #                  filename="accessory_files/hsapiens_gene_ensembl.txt")
-        # query = query.dropna(subset=["entrezgene_id"], inplace=True)
-
-        query = pd.read_csv(filename, sep="\t",index_col=0)
-        query = query.dropna(subset=["entrezgene_id"], inplace=True)
+        start_date = datetime(2023, 3, 23, tzinfo=pytz.timezone("Asia/Singapore"))
+        today = datetime.now(tz=pytz.timezone("Asia/Singapore"))
+        interval = timedelta(days = 90)
+        if today >= start_date + interval:
+            bm = Biomart()
+            query = bm.query(dataset='hsapiens_gene_ensembl', #  e.g. 'hsapiens_gene_ensembl'
+                             attributes=['ensembl_gene_id', 'external_gene_name', 'entrezgene_id'],
+                             filename="accessory_files/hsapiens_gene_ensembl.txt")
+            query = query.dropna(subset=["entrezgene_id"], inplace=True)
+            start_date = today
+        else:
+            query = pd.read_csv(filename, sep="\t",index_col=0)
+            query = query.dropna(subset=["entrezgene_id"], inplace=True)
         return query
     
     @st.cache_data
