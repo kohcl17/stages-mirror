@@ -6,6 +6,7 @@ import textwrap
 import numpy as np
 import pandas as pd
 import gseapy as gp
+from gseapy.biomart import Biomart
 
 import streamlit as st
 
@@ -14,7 +15,15 @@ class Enrichr_STAGES():
     Class to run enrichr functions for STAGES
     '''
 
-    # @st.cache_data
+    def background_enrichr(_self):
+        bm = Biomart()
+        query = bm.query(dataset='hsapiens_gene_ensembl', #  e.g. 'hsapiens_gene_ensembl'
+                         attributes=['ensembl_gene_id', 'external_gene_name', 'entrezgene_id'],
+                         filename=None)
+        query = query.dropna(subset=["entrezgene_id"], inplace=True)
+        return query
+    
+    @st.cache_data
     def execute_enrichr(_self, gene_dict, select_dataset, enr_pthresh=0.05, enr_showX=10):
         '''
         Parameters
@@ -33,7 +42,7 @@ class Enrichr_STAGES():
                 outdir=None,
                 no_plot=True,
                 cutoff=0.5,
-                background='hsapiens_gene_ensembl'
+                background=_self.background_enrichr()
             )
 
             # Sort values by adjusted p-value
