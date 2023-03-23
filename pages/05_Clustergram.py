@@ -113,8 +113,9 @@ try:
                                                     dendrogram_c=st.session_state['clust_dendroc'],
                                                     cluster_cols=st.session_state['clust_cols']
                                                     )
-            st.pyplot(get_clustergram)
             ss.save_state({'clustergram_plot':get_clustergram})
+            st.pyplot(st.session_state['clustergram_plot'])
+            file_downloads.create_pdf(st.session_state['clustergram_plot'], "Clustergram", "pyplot")
         
         except ValueError:
             st.error("At least 2 genes must be entered!")

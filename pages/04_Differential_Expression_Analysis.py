@@ -26,7 +26,8 @@ ss.initialise_state({'reset_volcano':False,
                      'xaxes_volcano':(0.0,0.0),
                      'yaxes_volcano':0.0,
                      'interactive_volcano':False,
-                     'volcano_plots':None,
+                     'volcano_plots_static':None,
+                     'volcano_plots_interactive':None,
                      'cdf_pthresh':0.05,
                      'cdf_linemode':'lines',
                      'cdf_plot':None,
@@ -71,7 +72,8 @@ try:
         interactive_volcano= st.session_state['interactive_volcano'],
         use_corrected_pval=st.session_state['use_corrected_pval']
         )
-    ss.save_state({'volcano_plots':[vol_plot, iplot]})
+    ss.save_state({'volcano_plots_static':vol_plot,
+                   'volcano_plots_interactive':iplot})
 
     with volcano_t:
         if st.session_state['interactive_volcano']:
@@ -103,8 +105,11 @@ try:
                             pval=st.session_state['cdf_pthresh'],
                             markermode=st.session_state['cdf_linemode'],
                             use_corrected_pval=st.session_state['use_corrected_pval'])
-    cdf_t.plotly_chart(cdf_plot, theme=None, use_container_width=True)
     ss.save_state({'cdf_plot':cdf_plot})
+
+    with cdf_t:
+        st.plotly_chart(st.session_state['cdf_plot'], theme=None, use_container_width=True)
+        file_downloads.create_pdf(st.session_state['cdf_plot'], "cumulative_density_DEGs", graph_module='plotly')
 
     ######### BAR PLOT #################
     deg_opts = st.sidebar.expander("Differential expression options", expanded=True)

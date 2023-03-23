@@ -18,7 +18,7 @@ ss.initialise_state({'prerank_selected_df_idx':0,
                      'prerank_choose_col':None,
                      'prerank_pthresh':0.05,
                      'prerank_showX':10,
-                     'prerank_ht':750,
+                     'prerank_ht':1000,
                      'plot_prerank':True,
                      'geneset_dict': {"Blood Transcriptomic Modules (BTM)": gp.read_gmt("accessory_files/BTM.gmt"),
                                       "Reactome 2021": gp.read_gmt("accessory_files/Reactome.gmt"),
@@ -98,7 +98,10 @@ try:
                                         prerank_showX=st.session_state['prerank_showX'],
                                         prerank_ht=st.session_state['prerank_ht'])
         ss.save_state({'prerank_plots':sig_plots})
-        prnk_plots_t.plotly_chart(sig_plots, theme=None, use_container_width=False)
+        prnk_plots_t.plotly_chart(st.session_state['prerank_plots'], theme=None, use_container_width=False)
+        with prnk_plots_t:
+            file_downloads.create_pdf(st.session_state['prerank_plots'], "Prerank_plots", "plotly")
+
         with prnk_data_t:
             for k,v in sig_res.items():
                 st.write(f"**{k}**")
