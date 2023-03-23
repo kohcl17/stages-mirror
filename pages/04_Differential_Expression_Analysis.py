@@ -77,15 +77,15 @@ try:
 
     with volcano_t:
         if st.session_state['interactive_volcano']:
-            st.pyplot(st.session_state['volcano_plots'][0])
-            file_downloads.create_pdf(st.session_state['volcano_plots'][0], "volcano_plot", graph_module='pyplot')
+            st.pyplot(st.session_state['volcano_plots_static'])
+            file_downloads.create_pdf(st.session_state['volcano_plots_static'], "volcano_plot", graph_module='pyplot')
 
-            st.plotly_chart(st.session_state['volcano_plots'][1], theme = None, use_container_width=True)
-            file_downloads.create_pdf(st.session_state['volcano_plots'][1], "interactive_volcano_plot", graph_module="plotly")
+            st.plotly_chart(st.session_state['volcano_plots_interactive'], theme = None, use_container_width=True)
+            file_downloads.create_pdf(st.session_state['volcano_plots_interactive'], "interactive_volcano_plot", graph_module="plotly")
 
         else:
-            st.pyplot(st.session_state['volcano_plots'][0])
-            file_downloads.create_pdf(st.session_state['volcano_plots'][0], "volcano_plot", graph_module='pyplot')
+            st.pyplot(st.session_state['volcano_plots_static'])
+            file_downloads.create_pdf(st.session_state['volcano_plots_static'], "volcano_plot", graph_module='pyplot')
 
     ########## CDF PLOT ###############
     line_options = ["lines", "markers", "lines+markers"]
@@ -119,9 +119,9 @@ try:
     bar_height = deg_opts.number_input(label="Adjust bar plot height (in px)", min_value=300, max_value=1200, value=st.session_state['bar_height'], step=50)
 
     ss.save_state({'bar_pval':bar_pval,
-                'bar_fc':bar_fc,
-                'bar_width':bar_width,
-                'bar_height':bar_height})
+                   'bar_fc':bar_fc,
+                   'bar_width':bar_width,
+                   'bar_height':bar_height})
 
     stacked1, proportions = DE.degs(st.session_state['log_dict_ready'],
                                             st.session_state['comparisons'],
