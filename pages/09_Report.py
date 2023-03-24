@@ -10,14 +10,15 @@ import plotly
 import matplotlib
 from PIL import Image
 from datetime import datetime
+import pytz
 
 from helper_functions.downloads import file_downloads
 
 
 st.header("Report Generation")
 # Get time
-today = datetime.now()
-dt_string = today.strftime("%d %B %Y %I:%M:%S %p")
+today = datetime.now(tz=pytz.timezone("Asia/Singapore"))
+dt_string = today.strftime("%d %B %Y %I:%M:%S %p (GMT%Z)")
 
 st.info("If you skipped any of the steps in the process, the report will still display the header but not the plots as they were not run.")
 
@@ -39,7 +40,7 @@ for key in ['volcano_plots_static', 'clustergram_plot']:
     if key in st.session_state:
         if st.session_state[key] is not None:
             to_bytes = file_downloads.plot_to_bytes(st.session_state[key], graph_module='pyplot', format='png')
-            all_plots_bytes = to_bytes
+            all_plots_bytes[key] = to_bytes
         else:
             all_plots_bytes[key] = None
     else:
