@@ -15,6 +15,8 @@ RUN git clone https://github.com/kohcl17/stageswip.git .
 
 RUN pip3 install -r requirements.txt
 
+RUN apt-get packages.txt
+
 EXPOSE 8501
 
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
