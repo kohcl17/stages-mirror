@@ -12,6 +12,7 @@ import streamlit as st
 
 from datetime import datetime, timedelta
 import pytz
+import gc
 
 class Enrichr_STAGES():
     '''
@@ -153,7 +154,8 @@ class Prerank_STAGES():
                                 seed=123,
                                 no_plot=True)
             prerank_results_dict[key] = running
-
+        gc.collect()
+        
         for key, result in prerank_results_dict.items():
             results = result.res2d
             prerank_all_out[key] = results
