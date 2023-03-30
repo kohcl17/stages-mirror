@@ -4,7 +4,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y wkhtmltopdf xvfb\
     build-essential \
     curl \
     software-properties-common \
@@ -14,8 +14,6 @@ RUN apt-get update && apt-get install -y \
 RUN git clone https://github.com/kohcl17/stageswip.git .
 
 RUN pip3 install -r requirements.txt
-
-RUN apt-get packages.txt
 
 EXPOSE 8501
 

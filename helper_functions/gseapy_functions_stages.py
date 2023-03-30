@@ -12,7 +12,6 @@ import streamlit as st
 
 from datetime import datetime, timedelta
 import pytz
-import gc
 
 class Enrichr_STAGES():
     '''
@@ -74,7 +73,7 @@ class Enrichr_STAGES():
         return enr_all, enr_significant
     
     @st.cache_data
-    def enr_barplot(_self, enr_significant, enr_useDEG=None, enr_pthresh=0.05, enr_showX=10, enr_ht=500):
+    def enr_barplot(_self, enr_significant, enr_useDEG=None, deg_fc=1.30, deg_pval=0.05, use_corrected_pval=True, select_dataset="BTM", enr_pthresh=0.05, enr_showX=10, enr_ht=500):
         if enr_useDEG is not None: # which implies it will require DEGs
             fig = make_subplots(rows=len(enr_significant), cols=1, subplot_titles=list(enr_significant.keys()),
                                 x_title="-log10 (adjusted p-value)", shared_xaxes=True,
@@ -93,7 +92,7 @@ class Enrichr_STAGES():
                                      row = i, col = 1)
                 i += 1
             fig.update_yaxes(title="Term", tickmode='linear', tick0=0, dtick=0, automargin=True)
-            fig.update_layout(title=f"Enriched Pathways (Top {enr_showX}), adjusted p-value < {enr_pthresh}", title_x=0.5,
+            fig.update_layout(title=f"Top {enr_showX} {select_dataset} pathways<br>|FC| > {deg_fc}, {'adjusted p-value' if use_corrected_pval else 'p-value'} < {deg_pval}", title_x=0.5,
                               showlegend=False,
                               yaxis={'tickmode': 'linear'},
                               font=dict(family='Arial', size=14),
@@ -112,8 +111,9 @@ class Enrichr_STAGES():
                                  hovertemplate="<b>%{y}</b><br>-logadjP: %{x}<br>Enriched genes: %{customdata}")
                                  )
             fig.update_yaxes(title="Term", tickmode='linear', tick0=0, dtick=0, automargin=True)
-            fig.update_layout(title=f"Enriched Pathways (Top {enr_showX}) for user-input genes<br>adjusted p-value < {enr_pthresh}", title_x=0.5,
+            fig.update_layout(title=f"Top {enr_showX} {select_dataset} pathways for user-input genes<br>", title_x=0.5,
                             showlegend=False,
+                            xaxis_title = "-log10 (adjusted p-value)",
                             yaxis={'tickmode': 'linear'},
                             font=dict(family='Arial', size=14),
                             width = 750, height = enr_ht)
@@ -154,8 +154,7 @@ class Prerank_STAGES():
                                 seed=123,
                                 no_plot=True)
             prerank_results_dict[key] = running
-        gc.collect()
-        
+
         for key, result in prerank_results_dict.items():
             results = result.res2d
             prerank_all_out[key] = results
@@ -170,11 +169,13 @@ class Prerank_STAGES():
             neg_nes["negative NES"] = neg_nes["NES"] * -1
 
             pos_nes_sort = pos_nes.sort_values(by=['NES'], ascending=True).tail(prerank_showX)
-            pos_nes_sort.reset_index(inplace=True, names='Term')
+            pos_nes_sort.reset_index(inplace=True) # Compatibility issues with python 3.7, where the names argument was not valid at pandas 1.3.5
+            pos_nes_sort = pos_nes_sort.rename(columns = {'index':'Term'}) # Subsequently due to this version error, have to manually rename the index column to term
             pos_nes_sort['direction'] = "positive"
 
             neg_nes_sort = neg_nes.sort_values(by=['negative NES'], ascending=True).tail(prerank_showX)
-            neg_nes_sort.reset_index(inplace=True, names='Term')
+            neg_nes_sort.reset_index(inplace=True) # Compatibility issues with python 3.7, where the names argument was not valid at pandas 1.3.5
+            neg_nes_sort = neg_nes_sort.rename(columns = {'index':'Term'}) # Subsequently due to this version error, have to manually rename the index column to term
             neg_nes_sort['direction'] = "negative"
 
             prerank_sig_out[f'Positive_enrichment_{key}'] = pos_nes_sort
@@ -182,8 +183,8 @@ class Prerank_STAGES():
         return prerank_all_out, prerank_sig_out
 
     @st.cache_data
-    def prerank_barplot(_self, prerank_sig, selected_col, prerank_pthresh=0.05, prerank_showX=10, prerank_ht = 1000):
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True,vertical_spacing=0.05, subplot_titles=list(prerank_sig.keys()))
+    def prerank_barplot(_self, prerank_sig, selected_col, prerank_pthresh=0.05, select_dataset=None, prerank_showX=10, prerank_ht = 1000):
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, x_title = "|NES|", vertical_spacing=0.05, subplot_titles=list(prerank_sig.keys()))
         i = 1
         for k,v in prerank_sig.items():
             wrap_prnk_sig = ["<br>".join(textwrap.wrap(a, 30)) for a in v.Term]
@@ -213,7 +214,7 @@ class Prerank_STAGES():
                                         row = i, col = 1)
                 i += 1
         fig.update_yaxes(title="Term", tickmode='linear', tick0=0, dtick=0, automargin=True)
-        fig.update_layout(title=f"Top {prerank_showX} GSEA Preranked Pathways from {selected_col}<br>adjusted p-value < {prerank_pthresh}", title_x=0.5,
+        fig.update_layout(title=f"Top {prerank_showX} GSEA Preranked {select_dataset} Pathways<br>({selected_col})", title_x=0.5,
                          showlegend=False,
                          yaxis={'tickmode': 'linear'},
                          font=dict(family='Arial', size=14),
