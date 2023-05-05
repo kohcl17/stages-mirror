@@ -32,12 +32,16 @@ class PreDEGs():
 
     @st.cache_data
     def volcano(_self,
-    user_log, comparison_dict,
-    reset=False, xaxes = (0.0, 0.0), yaxes = 0.0,
-    interactive_volcano = False,
-    use_corrected_pval = False
-    ):
+                user_log,
+                comparison_dict,
+                reset=False,
+                xaxes = (0.0, 0.0),
+                yaxes = 0.0,
+                interactive_volcano = False,
+                use_corrected_pval = False):
+        
         plt.style.use("ggplot")
+        p_format = "adjusted p-value" if use_corrected_pval else "p-value"
         top10annotation, bottom10annotation = [], []
         
         unlist_comparisons = sorted(list(set([item for sublist in comparison_dict.values() for item in sublist])), reverse=True)
@@ -85,7 +89,7 @@ class PreDEGs():
                     plt.scatter(user_filter[fc_name], user_filter[pval_name], alpha=0.8, label=complabels, c = [hex_clr])
                     plt.title("Volcano plot across comparisons", loc='center')
                     plt.xlabel('log2(Fold-change)')
-                    plt.ylabel('-log10(p-value)')
+                    plt.ylabel(f'-log10({p_format})')
                     plt.axhline(y=0, color='r', linestyle='dashed')
                     plt.axvline(x=0, linestyle='dashed')
 
@@ -103,12 +107,14 @@ class PreDEGs():
 
                     if interactive_volcano:
                         volcano1.add_trace(go.Scatter(x=user_filter[fc_name], y=user_filter[pval_name],
-                                                    mode='markers',
-                                                    name = complabels, hovertext=list(user_filter.index),
-                                                    marker=dict(color=hex_clr, size=8), opacity=0.9,
-                                                    legendgroup=tp
-                                                    )
-                                        )
+                                                      customdata=list(user_filter.index),
+                                                      mode='markers',
+                                                      name = complabels,
+                                                      hovertemplate=f"<b>%{{customdata}}</b><br>-log10({p_format}): %{{y:.2f}}<br>log2(Fold-change): %{{x:.2f}}",
+                                                      marker=dict(color=hex_clr, size=8), opacity=0.9,
+                                                      legendgroup=tp
+                                                      )
+                                                      )
                 annotationconcat_top = pd.concat(top10annotation, axis=0)
                 annotationconcat_top = annotationconcat_top.sort_values(by=["log2FC"], ascending=False).head(10)
 
@@ -136,7 +142,8 @@ class PreDEGs():
                                 title="Interactive volcano across comparisons",
                                 legend_title_text="Comparisons",
                                 font=dict(family='Arial', size=14),
-                                xaxis_title="log2(Fold-change)",yaxis_title="-log10(p-value)")
+                                xaxis_title="log2(Fold-change)",
+                                yaxis_title = f"-log10({p_format})")
 
             if xaxes != (0.0,0.0):
                 volcano1.update_xaxes(range=[xaxes[0], xaxes[1]])
@@ -170,7 +177,7 @@ class PreDEGs():
                     complabels = tp.replace("_", " ").replace("-", " ")
                     hex_clr = legend_dict[complabels]
                     #### selecting the required FC and pval for plotting
-                    pval_name = f'negative_log_pval_{tp}'
+                    pval_name = pval_name = f'neg_log_adj_pval_{tp}' if use_corrected_pval else f'neg_log_pval_{tp}'
                     fc_name = f'log2FC_{tp}'
                     mini_df = df[[fc_name, pval_name]]
 
@@ -215,9 +222,11 @@ class PreDEGs():
 
                     if interactive_volcano:
                         volcano1.add_trace(go.Scatter(x=user_filter[fc_name], y=user_filter[pval_name],
-                                                    mode='markers',
-                                                    name=complabels, hovertext=list(user_filter.index),
-                                                    marker=dict(color=hex_clr, size=8, opacity=0.9), legendgroup=str(i)),
+                                                      mode='markers',
+                                                      customdata=list(user_filter.index),
+                                                      name = complabels,
+                                                      hovertemplate=f"<b>%{{customdata}}</b><br>-log10({p_format}): %{{y:.2f}}<br>log2(Fold-change): %{{x:.2f}}",
+                                                      marker=dict(color=hex_clr, size=8, opacity=0.9), legendgroup=str(i)),
                                         row=v_row, col=v_col)
                         i += 1
 
@@ -272,7 +281,7 @@ class PreDEGs():
             plt.tick_params(labelcolor="none", bottom=False, left=False)
             fig.suptitle("Volcano plot across comparisons", fontsize=14)
             plt.xlabel("log2(Fold-change)")
-            plt.ylabel("-log10(p-value)")
+            plt.ylabel(f"-log10({p_format})")
 
             if xaxes != (0.0,0.0):
                 volcano1.update_xaxes(range=[xaxes[0], xaxes[1]])
@@ -283,15 +292,17 @@ class PreDEGs():
             volcano1.for_each_trace(lambda trace: trace.update(showlegend=False) if (trace.name in names) else names.add(trace.name))
 
             volcano1.update_layout(showlegend=True,
-                                title="Interactive volcano across comparisons", title_x=0.5,
-                                legend_title_text="Comparisons",
-                                font=dict(family='Arial', size=14)
+                                   yaxis_title = f"-log10({p_format})",
+                                   title="Interactive volcano across comparisons", title_x=0.5,
+                                   legend_title_text="Comparisons",
+                                   font=dict(family='Arial', size=14)
                                 )
         return fig, volcano1
     
     @st.cache_data
     def deg_cdf(_self, ready_dict, comparison_dict, pval=0.05, markermode='lines', use_corrected_pval=False):
         FC_step = [i/10 for i in range(0, 201, 1)]
+        p_format = "adjusted p-value" if use_corrected_pval else "p-value"
         fig = go.Figure()
         for k,v in ready_dict.items():
             comparisons = comparison_dict[k]
@@ -311,8 +322,8 @@ class PreDEGs():
                 n_n = [len(p_fc[(p_fc.iloc[:,0] < pval) & (p_fc.iloc[:,1] < -a)]) for a in FC_step]
                 n_total = [x + y for x, y in zip(n_p, n_n)]
                 fig.add_trace(go.Scatter(
-                    x=FC_step, y=n_total, name=comp.replace("_"," "),
-                    hovertemplate=f"p-value: {pval}<br>FC: %{{x}}<br>number of DEGs: %{{y}}",
+                    x=FC_step, y=n_total, name=f'{k}_{comp.replace("_"," ")}',
+                    hovertemplate=f"{p_format}: {pval}<br>FC: %{{x}}<br>number of DEGs: %{{y}}",
                     mode=markermode))
 
         fig.update_layout(title="DE cutoff plot of DEG numbers at various points",
@@ -336,9 +347,8 @@ class DEGs():
         p_format = "adjusted p-value" if use_corrected_pval else "p-value"
         ####################################### Filter DF by Pvals and FC #################################################
         proportions, deg_dict = {}, {}
-        for k,v in log_ready_dict.items():
-            comps = comparison_dict[k]
-            up, down = [], []
+        for k,v in log_ready_dict.items(): # for each file upload
+            comps = comparison_dict[k] # get the comparisons
             for cmp in comps:
                 pval_name = f"adj_pval_{cmp}" if use_corrected_pval else f"pval_{cmp}"
                 logfc_name = f"log2FC_{cmp}"
@@ -347,20 +357,16 @@ class DEGs():
                 deg_dict[f"{k}_{cmp}"] = degs
                 # calculating proportion of DEGs for pie chart
                 upreg_deg = degs[degs.loc[:, logfc_name] > 0]
-                up.append(len(upreg_deg))
-                proportions[f"{k}_upcount"] = up
+                proportions[f"{k}_{cmp}_upcount"] = [len(upreg_deg)]
                 proportions[f"UP_{k}_{cmp}"] = upreg_deg
 
                 downreg_deg = degs[degs.loc[:, logfc_name] < 0]
-                down.append(len(downreg_deg))
-                proportions[f"{k}_downcount"] = down
+                proportions[f"{k}_{cmp}_downcount"] = [len(downreg_deg)]
                 proportions[f"DOWN_{k}_{cmp}"] = downreg_deg
                 
         if len(log_ready_dict) == 1:
             stacked1 = go.Figure()
         else:
-            stacked_row = 1
-            stacked_col = 1
             if len(log_ready_dict) % 2 == 0:
                 nrows = math.ceil(len(log_ready_dict) / 2)
                 stacked1 = make_subplots(rows=nrows, cols=2, subplot_titles=(list(log_ready_dict.keys())),
@@ -372,39 +378,43 @@ class DEGs():
                                         y_title='Number of DEGs', 
                                         vertical_spacing=0.5, horizontal_spacing=0.02,
                                         shared_yaxes=True)
-            
+        
+        stacked_row = 1
+        stacked_col = 1
         for k,v in log_ready_dict.items():
-            if len(log_ready_dict) == 1:
-                # Stacked Bar
-                stacked1.add_trace(
-                    go.Bar(x=comps, y=proportions[f'{k}_downcount'], name="Downregulated", marker_color="#636EFA"))
-                stacked1.add_trace(
-                    go.Bar(x=comps, y=proportions[f'{k}_upcount'], name="Upregulated", marker_color="#EF553B"))
-            else:
-                # Stacked Bar
-                stacked1.add_trace(
-                    go.Bar(x=comps, y=proportions[f'{k}_downcount'], name="Downregulated", marker_color="#636EFA",
-                            legendgroup="A"),
-                    row=stacked_row, col=stacked_col)
-                stacked1.add_trace(
-                    go.Bar(x=comps, y=proportions[f'{k}_upcount'], name="Upregulated", marker_color="#EF553B",
-                            legendgroup="B"),
-                    row=stacked_row, col=stacked_col)
+            comps = comparison_dict[k]
+            for cmp in comps:
+                if len(log_ready_dict) == 1:
+                    # Stacked Bar
+                    stacked1.add_trace(
+                        go.Bar(x=[cmp], y=proportions[f'{k}_{cmp}_downcount'], name="Downregulated", marker_color="#636EFA"))
+                    stacked1.add_trace(
+                        go.Bar(x=[cmp], y=proportions[f'{k}_{cmp}_upcount'], name="Upregulated", marker_color="#EF553B"))
+                else:
+                    # Stacked Bar
+                    stacked1.add_trace(
+                        go.Bar(x=[cmp], y=proportions[f'{k}_{cmp}_downcount'], name="Downregulated", marker_color="#636EFA",
+                                legendgroup="A"),
+                                row=stacked_row, col=stacked_col)
+                    stacked1.add_trace(
+                        go.Bar(x=[cmp], y=proportions[f'{k}_{cmp}_upcount'], name="Upregulated", marker_color="#EF553B",
+                                legendgroup="B"),
+                                row=stacked_row, col=stacked_col)
 
-                stacked_col += 1
-                if len(log_ready_dict) % 2 == 0 and stacked_col > 2:
-                    stacked_col = 1
-                    stacked_row += 1
-                elif len(log_ready_dict) % 2 != 0 and stacked_col > 3:
-                    stacked_col = 1
-                    stacked_row += 1
+            stacked_col += 1
+            if len(log_ready_dict) % 2 == 0 and stacked_col > 2:
+                stacked_col = 1
+                stacked_row += 1
+            elif len(log_ready_dict) % 2 != 0 and stacked_col > 3:
+                stacked_col = 1
+                stacked_row += 1
 
-                ## removing duplicate legends
-                names = set()
-                stacked1.for_each_trace(lambda trace:trace.update(showlegend=False) if (trace.name in names) else names.add(trace.name))
+        ## removing duplicate legends
+        names = set()
+        stacked1.for_each_trace(lambda trace:trace.update(showlegend=False) if (trace.name in names) else names.add(trace.name))
         
         stacked1.update_layout(showlegend=True, barmode='stack',
-                            title=f"Number of DEGs across comparisons<br>(FC {fc_cutoff:.2f}; {p_format} {pval_cutoff})",
+                            title=f"Number of DEGs across comparisons<br>(|FC| > {fc_cutoff:.2f}; {p_format} < {pval_cutoff})",
                             title_x=0.5,
                             legend_title_text='DEGs:',
                             font=dict(family='Arial', size=14), width=u_width, height=u_height)

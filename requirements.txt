@@ -1,5 +1,5 @@
 plotly
-plotly_express
+plotly-express
 matplotlib
 streamlit
 streamlit_tags
@@ -7,7 +7,7 @@ scipy
 numpy
 pandas
 scikit_learn
-openpyxl==3.1.0
+openpyxl
 xlrd
 gseapy
 XlsxWriter
