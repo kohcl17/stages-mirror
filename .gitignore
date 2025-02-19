@@ -159,4 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-Debug/
+# Other caches/autosaves
+*/__pycache__
+STAGES_report.html
+STRING_network.zip
